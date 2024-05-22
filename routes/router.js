@@ -17,7 +17,7 @@ router.get("/signup", async (req, res) => {
     res.render("signup", { title: "Trustly - Signup", showHeader: false });
 });
 
-router.post("/loginsubmit", async (req, res) => {
+router.post("/login/submit", async (req, res) => {
     const userInput = req.body.email;
     const userPassword = req.body.password;
 
@@ -36,7 +36,7 @@ router.post("/loginsubmit", async (req, res) => {
 
 });
 
-router.post("/signupsubmit", async (req, res) => {
+router.post("/signup/submit", async (req, res) => {
     const username = req.body.username;
     const email = req.body.email;
     const password = req.body.password;
