@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="/assets/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/css/styles.css">
+    <title><%= title %></title>
+</head>
+<body>
+    <div class="container">
+        <% if (typeof showHeader === 'undefined' || showHeader) { %>
+            <%- include('../partials/header.ejs') %>
+        <% } %>
+        <main class="main">
+            <%- body %>
+        </main>
+        <% if (typeof showFooter === 'undefined' || showFooter) { %>
+            <%- include('../partials/footer.ejs') %>
+        <% } %>
+    </div>
+</body>
+</html>
