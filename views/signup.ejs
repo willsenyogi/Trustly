@@ -1,3 +1,20 @@
- <div>
-    <h1>Signup</h1>
-</div>
+<div style="display: flex; justify-content: center; align-items: center; height: 100vh; flex-direction: row; width: 100vw; flex-wrap: wrap;">
+    <img src="/assets/trustly-logo.png">
+    <form method="post" action="/signupsubmit" style="display: flex; flex-direction: column; gap: 10px;">
+        <div>
+        <p>Username</p>
+        <input name="username" style="width: 300px; height: 40px; border-radius: 20px;" type="text" required />
+      </div>
+      <div>
+        <p>Email Address</p>
+        <input name="email" style="width: 300px; height: 40px; border-radius: 20px;" type="text" required />
+      </div>
+      <div>
+        <p>Password</p>
+        <input name="password" style="width: 300px; height: 40px; border-radius: 20px;" type="password" required />
+      </div>
+      <button type = "submit" style="width: 100px; height: 40px; border-radius: 20px; color: black; background-color: whitesmoke; border: none;">
+        Submit
+      </button>
+    </form>
+  </div>

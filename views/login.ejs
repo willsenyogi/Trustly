@@ -1,15 +1,15 @@
 <div style="display: flex; justify-content: center; align-items: center; height: 100vh; flex-direction: row; width: 100vw; flex-wrap: wrap;">
   <img src="/assets/trustly-logo.png">
-  <form style="display: flex; flex-direction: column; gap: 10px;">
+  <form method="post" action="/loginsubmit" style="display: flex; flex-direction: column; gap: 10px;">
     <div>
       <p>Email Address</p>
-      <input style="width: 300px; height: 40px; border-radius: 20px;" type="text" required />
+      <input name="email" style="width: 300px; height: 40px; border-radius: 20px;" type="text" required />
     </div>
     <div>
       <p>Password</p>
-      <input style="width: 300px; height: 40px; border-radius: 20px;" type="password" required />
+      <input name="password" style="width: 300px; height: 40px; border-radius: 20px;" type="password" required />
     </div>
-    <button style="width: 100px; height: 40px; border-radius: 20px; color: black; background-color: whitesmoke; border: none;">
+    <button type = "submit" style="width: 100px; height: 40px; border-radius: 20px; color: black; background-color: whitesmoke; border: none;">
       Submit
     </button>
   </form>
