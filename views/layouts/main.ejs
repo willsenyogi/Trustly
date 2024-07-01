@@ -13,7 +13,15 @@
         <% if (typeof showHeader === 'undefined' || showHeader) { %>
             <%- include('../partials/header.ejs') %>
         <% } %>
-        <main class="main">
+
+        <% if (typeof showSidebar === 'undefined' || showSidebar) { %>
+            <%- include('../partials/dashboardNav.ejs') %>
+        <% } %>
+
+        <% if (typeof showDashboardHeader === 'undefined' || showDashboardHeader) { %>
+            <%- include('../partials/dashboardHeader.ejs') %>
+        <% } %>
+        <main class="content">
             <%- body %>
         </main>
         <% if (typeof showFooter === 'undefined' || showFooter) { %>
