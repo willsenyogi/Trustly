@@ -20,6 +20,11 @@ const userSchema = new mongoose.Schema({
     accountOpened: {
         type: Date,
         default: Date.now
+    },
+    token: {
+        type: String,
+        default: "112233",
+        required: true
     }
 });
 
