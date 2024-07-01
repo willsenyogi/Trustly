@@ -4,7 +4,7 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const app = express();
 const expressLayout = require('express-ejs-layouts');
-const userController = require('./controller/userController');
+const accountController = require('./controller/accountController');
 
 app.use(express.static('public'));
 app.use(express.json());
@@ -19,14 +19,12 @@ try{
     console.log("Error connecting to database",error);
 }
 
-// userController.addUser("willsenyogi", "willsenyogi@me.com", "willsenyogi");
-
 app.use(expressLayout);
 app.set('layout', './layouts/main');
 app.set('view engine', 'ejs');
 
 app.use('/', require('./routes/router.js'));
-// app.use('/auth', require('./server/routes/auth'));
+
 
 
 
