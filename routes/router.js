@@ -6,15 +6,15 @@ const flash = require("express-flash");
 // router.use(flash());
 
 router.get("/", async (req, res) => {
-    res.render("homepage", { title: "Trustly - When Trust Meets Finance", showSidebar: false });
+    res.render("homepage", { title: "Trustly - When Trust Meets Finance", showDashboardNav: false });
 });
 
 router.get("/login", async (req, res) => {
-    res.render("login", { title: "Trustly - Login", showHeader: false, showSidebar: false });
+    res.render("login", { title: "Trustly - Login", showHeader: false, showFooter: false, showDashboardNav: false });
 });
 
 router.get("/signup", async (req, res) => {
-    res.render("signup", { title: "Trustly - Signup", showHeader: false, showSidebar: false });
+    res.render("signup", { title: "Trustly - Signup", showHeader: false, showFooter: false, showDashboardNav: false });
 });
 
 router.post("/login/submit", async (req, res) => {
@@ -53,11 +53,10 @@ router.post("/signup/submit", async (req, res) => {
 
 router.get("/dashboard", async (req, res) => {
     res.render("dashboard", 
-        { title: "Trustly - Dashboard", 
+        {   title: "Trustly - Dashboard", 
             showHeader: false, 
             showFooter: false, 
-            showSidebar: true,
-            showDashboardHeader: true,
+            showDashboardNav: true,
          });
     });
 

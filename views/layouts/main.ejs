@@ -14,12 +14,8 @@
             <%- include('../partials/header.ejs') %>
         <% } %>
 
-        <% if (typeof showSidebar === 'undefined' || showSidebar) { %>
+        <% if (typeof showDashboardNav === 'undefined' || showDashboardNav) { %>
             <%- include('../partials/dashboardNav.ejs') %>
-        <% } %>
-
-        <% if (typeof showDashboardHeader === 'undefined' || showDashboardHeader) { %>
-            <%- include('../partials/dashboardHeader.ejs') %>
         <% } %>
         <main class="content">
             <%- body %>
