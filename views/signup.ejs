@@ -1,21 +1,38 @@
 <div style="display: flex; justify-content: center; align-items: center; height: 100vh; flex-direction: row; width: 100vw; flex-wrap: wrap;">
-    <img src="/assets/trustly-logo.png" style="border-right: 2px solid white; margin: 30px;">
-    <form method="post" action="/signup/submit" style="display: flex; flex-direction: column; gap: 10px;">
-        <div>
-        <p>Username</p>
-        <input name="username" style="width: 300px; height: 40px; border-radius: 20px;" type="text" required />
+  <img src="/assets/trustly-logo.png" style="border-right: 2px solid white; margin: 30px;">
+  <form method="post" action="/signup/submit" style="display: flex; flex-direction: column; gap: 10px;">
+      <div>
+          <p>Email Address</p>
+          <input name="email" style="width: 300px; height: 40px; border-radius: 20px;" type="text" required />
       </div>
       <div>
-        <p>Email Address</p>
-        <input name="email" style="width: 300px; height: 40px; border-radius: 20px;" type="text" required />
+          <p>Password</p>
+          <input name="password" style="width: 300px; height: 40px; border-radius: 20px;" type="password" required />
       </div>
       <div>
-        <p>Password</p>
-        <input name="password" style="width: 300px; height: 40px; border-radius: 20px;" type="password" required />
-        <a href="/login" style="text-decoration: none; color: white;"><p>Already have an account?</p></a>
+        <p>Full Name</p>
+        <input name="name" style="width: 300px; height: 40px; border-radius: 20px;" type="text" required />
+    </div>
+      <div>
+          <p>Choose your Card</p>
+          <label>
+              <input type="radio" name="cardType" value="VISA"> VISA
+          </label>
+          <label>
+              <input type="radio" name="cardType" value="MASTERCARD"> Mastercard
+          </label>
+          <label>
+              <input type="radio" name="cardType" value="GPN"> GPN
+          </label>
+          <label>
+              <input type="radio" name="cardType" value="AMERICAN EXPRESS"> American Express
+          </label>
       </div>
-      <button type = "submit" style="width: 100px; height: 40px; border-radius: 20px; color: black; background-color: whitesmoke; border: none;">
-        Submit
-      </button>
-    </form>
-  </div>
+      <div style="display: flex; justify-content: center;">
+          <button type="submit" style="width: 100px; height: 40px; border-radius: 20px; color: black; background-color: whitesmoke; border: none; text-align: center;">
+              Submit
+          </button>
+      </div>
+      <a href="/login" style="text-decoration: none; color: white;"><p>Already have an account?</p></a>
+  </form>
+</div>

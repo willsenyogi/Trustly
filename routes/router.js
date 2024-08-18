@@ -1,63 +1,97 @@
 const express = require("express");
 const router = express.Router();
 const User = require("../model/user");
-const flash = require("express-flash");
-
-// router.use(flash());
+const passport = require("passport");
+const bcrypt = require("bcryptjs");
 
 router.get("/", async (req, res) => {
     res.render("homepage", { title: "Trustly - When Trust Meets Finance", showDashboardNav: false });
 });
 
 router.get("/login", async (req, res) => {
-    res.render("login", { title: "Trustly - Login", showHeader: false, showFooter: false, showDashboardNav: false });
+    res.render("login", { title: "Trustly - Login", showHeader: false, showFooter: false, showDashboardNav: false, error: req.flash('error') });
 });
+
+router.post("/login/submit", passport.authenticate('local', {
+    successRedirect: '/dashboard',
+    failureRedirect: '/login',
+    failureFlash: true
+}));
+
 
 router.get("/signup", async (req, res) => {
     res.render("signup", { title: "Trustly - Signup", showHeader: false, showFooter: false, showDashboardNav: false });
 });
 
-router.post("/login/submit", async (req, res) => {
-    const userInput = req.body.email;
-    const userPassword = req.body.password;
+router.post("/signup/submit", async (req, res) => {
+    const { name, email, password, cardType } = req.body;
+    const cardExpiry = new Date();
+    cardExpiry.setFullYear(cardExpiry.getFullYear() + 5);
+    cardExpiry.setMonth(cardExpiry.getMonth() + 1);
+    cardExpiry.setDate(0);
+    cardExpiry.setHours(23, 59, 59, 999);
 
     try {
-        const user = await User.findOne({ email: userInput, password: userPassword });
-        if (user) {
-            res.redirect("/");
-            // req.flash("error", "Invalid Credentials");
-        } else {
-            res.redirect("/login");
-        }
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+
+        const user = new User({ name, email, password: hashedPassword, cardType, cardExpiry });
+        await user.save();
+
+        req.login(user, (err) => {
+            if (err) {
+                console.log(err);
+                return res.status(500).send("An error occurred while logging in.");
+            }
+            res.redirect("/dashboard");
+            console.log(`User ${name} added and logged in`);
+        });
     } catch (error) {
         console.log(error);
         res.status(500).send("An error occurred while processing your request.");
     }
-
-});
-
-router.post("/signup/submit", async (req, res) => {
-    const username = req.body.username;
-    const email = req.body.email;
-    const password = req.body.password;
-
-    try{
-        const user = new User({username, email, password});
-        await user.save();
-        res.redirect("/");
-        console.log(`user ${username} added`);
-    } catch (error){
-        console.log(error);
-    }
 });
 
 router.get("/dashboard", async (req, res) => {
-    res.render("dashboard", 
-        {   title: "Trustly - Dashboard", 
-            showHeader: false, 
-            showFooter: false, 
-            showDashboardNav: true,
-         });
-    });
+    if (req.isAuthenticated()) {
+        try {
 
-module.exports = router
+            const loggedUser = await User.findById(req.session.passport.user);
+
+            if (!loggedUser) {
+                return res.redirect('/login');
+            }
+
+            res.render("dashboard", {
+                title: "Trustly - Dashboard",
+                showHeader: false,
+                showFooter: false,
+                showDashboardNav: true,
+                loggedUser
+            });
+        } catch (error) {
+            console.error("Error fetching user:", error);
+            res.status(500).send("An error occurred while loading the dashboard.");
+        }
+    } else {
+        res.redirect('/login');
+    }
+});
+
+router.get("/logout", (req, res) => {
+    req.logout((err) => {
+        if (err) {
+            console.error('Logout error:', err);
+            return res.redirect('/dashboard');
+        }
+        req.session.destroy((err) => {
+            if (err) {
+                console.error('Session destroy error:', err);
+                return res.redirect('/dashboard');
+            }
+            res.redirect('/login');
+        });
+    });
+});
+
+module.exports = router;

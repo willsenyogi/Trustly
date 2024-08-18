@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema({
-    username: {
+    name: {
         type: String,
         required: true,
     },
@@ -20,6 +20,21 @@ const userSchema = new mongoose.Schema({
     accountOpened: {
         type: Date,
         default: Date.now
+    },
+    cardType: {
+        type: String,
+        enum : ["VISA", "MASTERCARD", "GPN", "AMERICAN EXPRESS"],
+    },
+    cardExpiry: {
+        type: Date
+    },
+    balance: {
+        type: Number,
+        default: 20000000
+    },
+    deposit: {
+        type: Number,
+        default: 0
     },
     token: {
         type: String,

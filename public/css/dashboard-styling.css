@@ -152,3 +152,21 @@ body {
 #showcase-button:hover {
     background-color: #333;
 }
+
+.logout-button {
+    background-color: #000000;
+    border: 1px solid white;
+    height: 50px;
+    width: 100px;
+    color: white;
+    border-radius: 7px;
+    transition: box-shadow 0.3s ease-in-out, transform 0.3s ease-in-out;
+    cursor: pointer;
+    font-weight: larger;
+    margin-left: 30px;
+  }
+  
+  .logout-button:hover {
+    box-shadow: 0 0 10px 2px #fefefe;
+    transform: scale(1.05);
+  }

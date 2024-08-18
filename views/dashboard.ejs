@@ -6,7 +6,7 @@
         <div class="funds-showcase">
           <h1>Available Balance</h1>
           <p>Account Number : 12343342313</p>
-          <h2>Rp 900.000,00</h2>
+          <h2><%= new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(loggedUser.balance) %></h2>
           <div class="transfer-button">
             <a href="/transfer" id="showcase-button">Transfer Funds</a>
           </div>
@@ -14,7 +14,7 @@
 
         <div class="cards-showcase">
           <h1>Your Card</h1>
-          <p>Visa</p>
+          <p><%= loggedUser.cardType.toUpperCase() %></p>
           <img src="/assets/card.png">
           <p>Valid until 03/24</p>
           <a href="/withdraw" id="showcase-button">See Card Detail</a>
@@ -23,7 +23,7 @@
         <div class="deposit-showcase">
           <h1>Time Deposit</h1>
           <p>Deposited Cash</p>
-          <h2>Rp 10.000.000,00</h2>
+          <h2><%= new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(loggedUser.deposit) %></h2>
           <p>Tenor : 6 Months</p>
           <a href="/time-deposit" id="showcase-button">See Details</a>
         </div>
