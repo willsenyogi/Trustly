@@ -3,6 +3,7 @@ const router = express.Router();
 const User = require("../model/user");
 const passport = require("passport");
 const bcrypt = require("bcryptjs");
+const { generateAccountNumber, generateCardNumber } = require("../controller/accountController");
 
 router.get("/", async (req, res) => {
     res.render("homepage", { title: "Trustly - When Trust Meets Finance", showDashboardNav: false });
@@ -33,9 +34,18 @@ router.post("/signup/submit", async (req, res) => {
 
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
+        const accountNumber = generateAccountNumber();
+        const cardNumber = generateCardNumber();
 
-
-        const user = new User({ name, email, password: hashedPassword, cardType, cardExpiry });
+        const user = new User({
+            name,
+            email,
+            password: hashedPassword,
+            cardType,
+            cardExpiry,
+            accountNumber,
+            cardNumber
+        });
         await user.save();
 
         req.login(user, (err) => {
@@ -52,22 +62,28 @@ router.post("/signup/submit", async (req, res) => {
     }
 });
 
+
 router.get("/dashboard", async (req, res) => {
     if (req.isAuthenticated()) {
         try {
-
             const loggedUser = await User.findById(req.session.passport.user);
 
             if (!loggedUser) {
                 return res.redirect('/login');
             }
 
+            const cardExpiry = loggedUser.cardExpiry;
+            const formattedExpiry = cardExpiry ? 
+                `${String(cardExpiry.getMonth() + 1).padStart(2, '0')}/${String(cardExpiry.getFullYear()).slice(-2)}` 
+                : 'N/A';
+
             res.render("dashboard", {
                 title: "Trustly - Dashboard",
                 showHeader: false,
                 showFooter: false,
                 showDashboardNav: true,
-                loggedUser
+                loggedUser,
+                formattedExpiry
             });
         } catch (error) {
             console.error("Error fetching user:", error);
@@ -77,6 +93,7 @@ router.get("/dashboard", async (req, res) => {
         res.redirect('/login');
     }
 });
+
 
 router.get("/logout", (req, res) => {
     req.logout((err) => {

@@ -5,7 +5,7 @@
       <div class="sub-container">
         <div class="funds-showcase">
           <h1>Available Balance</h1>
-          <p>Account Number : 12343342313</p>
+          <p>Account Number : <%= loggedUser.accountNumber %></p>
           <h2><%= new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(loggedUser.balance) %></h2>
           <div class="transfer-button">
             <a href="/transfer" id="showcase-button">Transfer Funds</a>
@@ -16,7 +16,7 @@
           <h1>Your Card</h1>
           <p><%= loggedUser.cardType.toUpperCase() %></p>
           <img src="/assets/card.png">
-          <p>Valid until 03/24</p>
+          <p>Valid until <%= formattedExpiry %></p>
           <a href="/withdraw" id="showcase-button">See Card Detail</a>
         </div>
 

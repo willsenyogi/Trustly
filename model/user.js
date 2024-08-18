@@ -28,6 +28,12 @@ const userSchema = new mongoose.Schema({
     cardExpiry: {
         type: Date
     },
+    accountNumber: {
+        type: Number
+    },
+    cardNumber: {
+        type: Number
+    },
     balance: {
         type: Number,
         default: 20000000
