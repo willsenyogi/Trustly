@@ -1,6 +1,13 @@
 <h1>Current Balance : <%= new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(loggedUser.balance) %></h1>
+<% if (transfererror && transfererror.length > 0) { %>
+    <div style="color: red;">
+      <% transfererror.forEach(function(msg) { %>
+        <p><%= msg %></p>
+      <% }); %>
+    </div>
+  <% } %>
 <form action="/transfer" method="POST">
-    <input type="number" name="accountNumber" placeholder="Account Number" required>
-    <input type="number" name="transferAmount" placeholder="Transfer Amount" required>
-    <input type="submit" value="Transfer">
+    <input type="number" name="accountNumber" placeholder="Account Number" required style="height: 70px; font-size: larger;">
+    <input type="number" name="transferAmount" placeholder="Transfer Amount" required style="height: 70px; font-size: larger;">
+    <input type="submit" value="Transfer" style="height: 70px; font-size: larger;">
 </form>

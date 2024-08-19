@@ -190,6 +190,7 @@ router.get("/transfer", async (req, res) => {
         showFooter: false,
         showDashboardNav: true,
         loggedUser,
+        transfererror: req.flash('transfererror'),
       });
     } catch (error) {
       console.error("Error fetching user:", error);
@@ -209,18 +210,22 @@ router.post("/transfer", async (req, res) => {
         
         // Check if transferAmount is valid
         if (isNaN(transferAmount) || transferAmount <= 0) {
-          return res.status(400).json({ error: "Invalid transfer amount" });
+          req.flash('transfererror', 'Invalid transfer amount');
+          return res.redirect('/transfer');
+          
         }
   
         // Check for sufficient balance
         if (loggedUser.balance - transferAmount < 0) {
-          return res.status(400).json({ error: "Insufficient balance" });
+          req.flash('transfererror', 'Insufficient balance');
+          return res.redirect('/transfer');
         }
   
         // Find target user by account number
         const targetAccountObj = await User.findOne({ accountNumber });
         if (!targetAccountObj) {
-          return res.status(400).json({ error: "Invalid target account number" });
+          req.flash('transfererror', 'Account number not found');
+          return res.redirect('/transfer');
         }
   
         // Log the balances before update
