@@ -13,6 +13,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    accesscode: {
+        type: String,
+        required: true
+    },
     isAdmin: {
         type: Boolean,
         default: false
@@ -41,6 +45,13 @@ const userSchema = new mongoose.Schema({
     deposit: {
         type: Number,
         default: 0
+    },
+    tenor: {
+        type: Number,
+        default: 0
+    },
+    savedAccounts: {
+        type: Array
     },
     token: {
         type: String,

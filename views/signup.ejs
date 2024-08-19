@@ -1,38 +1,59 @@
 <div style="display: flex; justify-content: center; align-items: center; height: 100vh; flex-direction: row; width: 100vw; flex-wrap: wrap;">
-  <img src="/assets/trustly-logo.png" style="border-right: 2px solid white; margin: 30px;">
-  <form method="post" action="/signup/submit" style="display: flex; flex-direction: column; gap: 10px;">
-      <div>
-          <p>Email Address</p>
-          <input name="email" style="width: 300px; height: 40px; border-radius: 20px;" type="text" required />
-      </div>
-      <div>
-          <p>Password</p>
-          <input name="password" style="width: 300px; height: 40px; border-radius: 20px;" type="password" required />
-      </div>
-      <div>
-        <p>Full Name</p>
-        <input name="name" style="width: 300px; height: 40px; border-radius: 20px;" type="text" required />
-    </div>
-      <div>
-          <p>Choose your Card</p>
-          <label>
-              <input type="radio" name="cardType" value="VISA"> VISA
-          </label>
-          <label>
-              <input type="radio" name="cardType" value="MASTERCARD"> Mastercard
-          </label>
-          <label>
-              <input type="radio" name="cardType" value="GPN"> GPN
-          </label>
-          <label>
-              <input type="radio" name="cardType" value="AMERICAN EXPRESS"> American Express
-          </label>
-      </div>
-      <div style="display: flex; justify-content: center;">
-          <button type="submit" style="width: 100px; height: 40px; border-radius: 20px; color: black; background-color: whitesmoke; border: none; text-align: center;">
-              Submit
-          </button>
-      </div>
-      <a href="/login" style="text-decoration: none; color: white;"><p>Already have an account?</p></a>
-  </form>
+    <img src="/assets/trustly-logo.png" style="border-right: 2px solid white; margin: 30px;" alt="Trustly Logo">
+    
+    <form method="post" action="/signup/submit" style="display: flex; flex-direction: column; gap: 10px;">
+        <% if (errors && errors.length > 0) { %>
+            <div style="color: red;">
+                <ul>
+                    <% errors.forEach(function(error) { %>
+                        <li><%= error %></li>
+                    <% }) %>
+                </ul>
+            </div>
+        <% } %>
+        
+        <div>
+            <label for="email">Email Address</label>
+            <input id="email" name="email" style="width: 300px; height: 40px; border-radius: 20px;" type="email" value="<%= formData ? formData.email : '' %>" required />
+        </div>
+        <div>
+            <label for="password">Password</label>
+            <input id="password" name="password" style="width: 300px; height: 40px; border-radius: 20px;" type="password" required />
+        </div>
+        <div>
+            <label for="accesscode">Access Code</label>
+            <input id="accesscode" name="accesscode" style="width: 300px; height: 40px; border-radius: 20px;" type="password" required />
+        </div>
+        <div>
+            <label for="name">Full Name</label>
+            <input id="name" name="name" style="width: 300px; height: 40px; border-radius: 20px;" type="text" value="<%= formData ? formData.name : '' %>" required />
+        </div>
+        <div>
+            <p>Choose your Card</p>
+            <label>
+                <input type="radio" name="cardType" value="VISA" <%= formData && formData.cardType === 'VISA' ? 'checked' : '' %>> VISA
+            </label>
+            <label>
+                <input type="radio" name="cardType" value="MASTERCARD" <%= formData && formData.cardType === 'MASTERCARD' ? 'checked' : '' %>> Mastercard
+            </label>
+            <label>
+                <input type="radio" name="cardType" value="GPN" <%= formData && formData.cardType === 'GPN' ? 'checked' : '' %>> GPN
+            </label>
+            <label>
+                <input type="radio" name="cardType" value="AMERICAN EXPRESS" <%= formData && formData.cardType === 'AMERICAN EXPRESS' ? 'checked' : '' %>> American Express
+            </label>
+        </div>
+        <div style="display: flex; justify-content: center;">
+            <button type="submit" style="width: 100px; height: 40px; border-radius: 20px; color: black; background-color: whitesmoke; border: none; text-align: center;">
+                Submit
+            </button>
+        </div>
+        <a href="/login" style="text-decoration: none; color: white;"><p>Already have an account?</p></a>
+    </form>
 </div>
+
+<script>
+    document.getElementById('accesscode').addEventListener('input', function (e) {
+        this.value = this.value.replace(/[^0-9]/g, '');
+    });
+</script>

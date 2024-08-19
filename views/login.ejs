@@ -8,6 +8,10 @@
     <div>
       <p>Password</p>
       <input name="password" style="width: 300px; height: 40px; border-radius: 20px;" type="password" required />
+    </div>
+    <div>
+      <p>Access Code</p>
+      <input name="accesscode" style="width: 300px; height: 40px; border-radius: 20px;" type="password" required />
       <a href="/signup" style="text-decoration: none; color: white;"><p>Don't have an account?</p></a>
     </div>
     <% if (error_msg.length > 0) { %>
@@ -21,3 +25,9 @@
     </button>
   </form>
 </div>
+
+<script>
+  document.getElementById('accesscode').addEventListener('input', function (e) {
+      this.value = this.value.replace(/[^0-9]/g, '');
+  });
+</script>

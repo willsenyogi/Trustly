@@ -1,0 +1,6 @@
+<h1>Current Balance : <%= new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(loggedUser.balance) %></h1>
+<form action="/transfer" method="POST">
+    <input type="number" name="accountNumber" placeholder="Account Number" required>
+    <input type="number" name="transferAmount" placeholder="Transfer Amount" required>
+    <input type="submit" value="Transfer">
+</form>

@@ -4,8 +4,9 @@ const bcrypt = require('bcryptjs');
 const passport = require('passport');
 
 // Local Strategy for login
-passport.use(new LocalStrategy({ usernameField: 'email' }, async (email, password, done) => {
+passport.use(new LocalStrategy({ usernameField: 'email', passwordField: 'password', passReqToCallback: true }, async (req, email, password, done) => {
     try {
+        const accesscode = req.body.accesscode;
         // Match user
         const user = await User.findOne({ email: email });
         if (!user) {
@@ -15,6 +16,11 @@ passport.use(new LocalStrategy({ usernameField: 'email' }, async (email, passwor
         // Match password
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
+            return done(null, false, { message: 'Incorrect Credentials' });
+        }
+
+        const isCodeMatch = await bcrypt.compare(accesscode, user.accesscode);
+        if (!isCodeMatch) {
             return done(null, false, { message: 'Incorrect Credentials' });
         }
 
