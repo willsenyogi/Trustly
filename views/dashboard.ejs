@@ -9,6 +9,7 @@
           <h2><%= new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(loggedUser.balance) %></h2>
           <div class="transfer-button">
             <a href="/transfer" id="showcase-button">Transfer Funds</a>
+            <a href="/transactions" id="showcase-button">View Transactions</a>
           </div>
         </div>
 
@@ -17,7 +18,8 @@
           <p><%= loggedUser.cardType.toUpperCase() %></p>
           <img src="/assets/card.png">
           <p>Valid until <%= formattedExpiry %></p>
-          <a href="/withdraw" id="showcase-button">See Card Detail</a>
+          <a href="#" id="showcase-button">See Card Detail</a>
+          <a href="#" id="showcase-button">Debit Card Promos</a>
         </div>
 
         <div class="deposit-showcase">
@@ -25,7 +27,9 @@
           <p>Deposited Cash</p>
           <h2><%= new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(loggedUser.deposit) %></h2>
           <p>Tenor : 6 Months</p>
-          <a href="/time-deposit" id="showcase-button">See Details</a>
+          <a href="#" id="showcase-button">Add Funds</a>
+          <a href="#" id="showcase-button">Withdraw</a>
+          <a href="#" id="showcase-button">See Details</a>
         </div>
 
         <div class="chart-showcase">

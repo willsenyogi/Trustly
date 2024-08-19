@@ -154,16 +154,15 @@ body {
 }
 
 .logout-button {
-    background-color: #000000;
-    border: 1px solid white;
-    height: 50px;
-    width: 100px;
-    color: white;
-    border-radius: 7px;
-    transition: box-shadow 0.3s ease-in-out, transform 0.3s ease-in-out;
-    cursor: pointer;
-    font-weight: larger;
-    margin-left: 30px;
+    background-color: #000;
+    border: 1px solid #f0f0f0;
+    border-radius: 5px;
+    padding: 15px 30px;
+    display: inline-block;
+    text-decoration: none;
+    color: #fff;
+    margin-top: 20px;
+    font-size: 18px;
   }
   
   .logout-button:hover {
