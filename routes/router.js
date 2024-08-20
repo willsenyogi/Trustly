@@ -3,7 +3,8 @@ const router = express.Router();
 const User = require("../model/user");
 const passport = require("passport");
 const bcrypt = require("bcryptjs");
-const TransactionHistory = require("../model/transactionHistory");
+const PDFDocument = require('pdfkit');
+const path = require('path');
 const {
   generateAccountNumber,
   generateCardNumber,
@@ -294,6 +295,73 @@ router.post("/transfer", async (req, res) => {
       }
     } else {
       res.redirect("/login");
+    }
+  });
+
+  router.get('/transactions/invoice/:id', async (req, res) => {
+    if (req.isAuthenticated()) {
+      try {
+        const transaction = await transactionHistory.findById(req.params.id);
+  
+        if (!transaction) {
+          return res.status(404).send("Transaction not found");
+        }
+  
+        // Create a new PDF document
+        const doc = new PDFDocument({
+          size: [297.64, 420.94],
+          margins: { top: 50, bottom: 50, left: 50, right: 50 },
+        });
+  
+        // Set response headers
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `inline; filename=invoice-${transaction._id}.pdf`);
+  
+        // Pipe the PDF document to the response
+        doc.pipe(res);
+  
+        // Set the background color to black
+        doc.rect(0, 0, doc.page.width, doc.page.height).fill('#000000');
+  
+        // Add the Trustly logo
+        const logoPath = path.join(__dirname, '..', 'public', 'assets', 'trustly-logo.png');
+        doc.image(logoPath, doc.page.width / 2 - 50, 50, { width: 100 });
+  
+        // Set font color to white
+        doc.fillColor('#FFFFFF');
+  
+  
+        // Add some space
+        doc.moveDown(5);
+  
+        // Transaction details section
+        doc.fontSize(16).text('Transaction Details', { underline: true });
+        doc.moveDown(1);
+  
+        // Display transaction details in a nicely formatted way
+        doc.fontSize(12).text(`Date: ${transaction.date.toISOString().slice(0, 10)}`);
+        doc.text(`Transaction ID: ${transaction._id}`);
+        doc.text(`Account: ${transaction.receiver} (${transaction.receiverName})`);
+        doc.text(`Transaction Type: ${transaction.transactionType}`);
+        doc.text(`Amount: ${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(transaction.amount)}`);
+        doc.moveDown(2);
+  
+        // Add a footer
+        doc.text('When Trust Meets Finance', {
+          align: 'center',
+          valign: 'bottom',
+          baseline: 'bottom',
+        });
+  
+        // Finalize the PDF and end the stream
+        doc.end();
+  
+      } catch (error) {
+        console.error('Error generating invoice:', error);
+        res.status(500).send('An error occurred while generating the invoice.');
+      }
+    } else {
+      res.redirect('/login');
     }
   });
   

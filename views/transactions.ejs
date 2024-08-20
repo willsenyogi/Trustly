@@ -56,14 +56,14 @@
       <% transactions.forEach(transaction => { %>
       <tr data-transaction-id="<%= transaction._id %>">
         <td><%= transaction.date.toISOString().slice(0, 10) %></td>
-        <td><%= transaction.receiver %> <%= transaction.receiverName %></td>
+        <td><%= transaction.receiver %> (<%= transaction.receiverName %>)</td>
         <td><%= transaction.transactionType %></td>
         <td>
           <%= new Intl.NumberFormat('id-ID', { style: 'currency', currency:
           'IDR' }).format(transaction.amount) %>
         </td>
         <td id="editor">
-          <a>Show</a>
+          <a href="#" class="show-invoice" data-transaction-id="<%= transaction._id %>">Show</a>
         </td>
       </tr>
       <% }); %>
@@ -166,6 +166,28 @@
     $('#filter-reset').on('click', function () {
       $.fn.dataTable.ext.search = [];
       table.columns().search('').draw();
+    });
+
+    // Handle "Show" button click for generating invoices
+    $(document).on("click", ".show-invoice", function (e) {
+      e.preventDefault();
+      var transactionId = $(this).data("transaction-id");
+
+      $.ajax({
+        url: '/transactions/invoice/' + transactionId,
+        method: 'GET',
+        xhrFields: {
+          responseType: 'blob' // Ensure the response is treated as a binary file
+        },
+        success: function (data) {
+          var blob = new Blob([data], { type: 'application/pdf' });
+          var url = window.URL.createObjectURL(blob);
+          window.open(url);
+        },
+        error: function () {
+          alert("An error occurred while generating the invoice.");
+        }
+      });
     });
   });
 </script>
