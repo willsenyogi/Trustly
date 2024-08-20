@@ -59,8 +59,10 @@
         <td><%= transaction.receiver %> (<%= transaction.receiverName %>)</td>
         <td><%= transaction.transactionType %></td>
         <td>
-          <%= new Intl.NumberFormat('id-ID', { style: 'currency', currency:
-          'IDR' }).format(transaction.amount) %>
+          <%= transaction.transactionType === 'Transfer (CR)' || transaction.transactionType === 'Time Deposit (CR)' 
+              ? '-' 
+              : '+' %>
+          <%= new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(transaction.amount) %>
         </td>
         <td id="editor">
           <a href="#" class="show-invoice" data-transaction-id="<%= transaction._id %>">Show</a>
