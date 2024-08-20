@@ -117,6 +117,7 @@ router.get("/dashboard", async (req, res) => {
   if (req.isAuthenticated()) {
     try {
       const loggedUser = await User.findById(req.session.passport.user);
+      const transactions = await transactionHistory.find({ sender: loggedUser.accountNumber }).sort({ date: -1 });
 
       if (!loggedUser) {
         return res.redirect("/login");
@@ -136,6 +137,7 @@ router.get("/dashboard", async (req, res) => {
         showDashboardNav: true,
         loggedUser,
         formattedExpiry,
+        transactions,
       });
     } catch (error) {
       console.error("Error fetching user:", error);

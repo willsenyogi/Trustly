@@ -1,4 +1,5 @@
 <link rel="stylesheet" href="/css/dashboard-styling.css" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <div>
   <div class="page-wrapper">
     <div class="container">
@@ -34,9 +35,77 @@
 
         <div class="chart-showcase">
           <h1>Your Last 30 Days Transactions</h1>
-          <img src="/assets/chart.png">
+          <canvas id="transactionsChart"></canvas>
         </div>
       </div>
     </div>
   </div>
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+      const transactions = <%- JSON.stringify(transactions) %>;
+      
+      // Filter the last 30 days of transactions
+      const today = new Date();
+      const last30Days = transactions.filter(transaction => {
+        const transactionDate = new Date(transaction.date);
+        return (today - transactionDate) <= (30 * 24 * 60 * 60 * 1000);
+      });
+
+      // Count transactions by type
+      const transactionTypes = ['Transfer (CR)', 'Transfer (DB)', 'Time Deposit (CR)', 'Time Deposit (DB)'];
+      const transactionCounts = transactionTypes.map(type => {
+        return last30Days.filter(transaction => transaction.transactionType === type).length;
+      });
+
+      const ctx = document.getElementById('transactionsChart').getContext('2d');
+      const transactionsChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: transactionTypes,
+          datasets: [{
+            label: 'Number of Transactions',
+            data: transactionCounts,
+            backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'],
+            borderWidth: 1
+          }]
+        },
+        options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top'
+          },
+          tooltip: {
+            callbacks: {
+              label: function (tooltipItem) {
+                return `Count: ${tooltipItem.raw}`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Transaction Type'
+            }
+          },
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Number of Transactions'
+            },
+            ticks: {
+              stepSize: 1
+            }
+          }
+        }
+      }
+    });
+  });
+</script>
