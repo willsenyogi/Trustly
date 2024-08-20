@@ -243,13 +243,25 @@ router.post("/transfer", async (req, res) => {
         console.log(`After Transfer - Sender Balance: ${loggedUser.balance}, Receiver Balance: ${targetAccountObj.balance}`);
   
         // Save transaction history
-        const history = new transactionHistory({
+        const senderHistory = new transactionHistory({
           sender: loggedUser.accountNumber,
           receiver: targetAccountObj.accountNumber,
+          senderName: loggedUser.name,
+          receiverName: targetAccountObj.name,
           amount: transferAmount,
-          transactionType: "Transfer",
+          transactionType: "Transfer (CR)",
         });
-        await history.save();
+        await senderHistory.save();
+
+        const receiverHistory = new transactionHistory({
+          sender: targetAccountObj.accountNumber,
+          receiver: loggedUser.accountNumber,
+          senderName: targetAccountObj.name,
+          receiverName: loggedUser.name,
+          amount: transferAmount,
+          transactionType: "Transfer (DB)",
+        });
+        await receiverHistory.save();
   
         res.redirect("/dashboard");
   
@@ -263,5 +275,26 @@ router.post("/transfer", async (req, res) => {
     }
   });
   
+  router.get("/transactions", async (req, res) => {
+    if (req.isAuthenticated()) {
+      try {
+        const loggedUser = await User.findById(req.session.passport.user);
+        const transactions = await transactionHistory.find({ sender: loggedUser.accountNumber }).sort({ date: -1 });
+        res.render("transactions", {
+          title: "Trustly - Transactions History",
+          showHeader: false,
+          showFooter: false,
+          showDashboardNav: true,
+          loggedUser,
+          transactions,
+        });
+      } catch (error) {
+        console.error("Error fetching user:", error);
+        res.status(500).send("An error occurred while loading the saved accounts.");
+      }
+    } else {
+      res.redirect("/login");
+    }
+  });
   
 module.exports = router;
