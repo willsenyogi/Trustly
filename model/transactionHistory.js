@@ -9,6 +9,14 @@ const transactionHistorySchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    senderName: {
+        type: String,
+        required: true
+    },
+    receiverName: {
+        type: String,
+        required: true
+    },
     transactionType: {
         type: String,
         required: true
