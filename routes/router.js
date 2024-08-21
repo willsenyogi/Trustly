@@ -366,5 +366,77 @@ router.post("/transfer", async (req, res) => {
       res.redirect('/login');
     }
   });
+
+  router.get("/savedAccounts", async (req, res) => {
+    if (req.isAuthenticated()) {
+      try {
+        const loggedUser = await User.findById(req.session.passport.user);
+        const savedAccounts = loggedUser.savedAccounts;
+        res.render("savedAccounts", {
+          title: "Trustly - Saved Accounts",
+          showHeader: false,
+          showFooter: false,
+          showDashboardNav: true,
+          loggedUser,
+          savedAccounts,
+          messages: req.flash('success'),
+        });
+      } catch (error) {
+        console.error("Error fetching user:", error);
+        res.status(500).send("An error occurred while loading the saved accounts.");
+      }
+    } else {
+      res.redirect("/login");
+    }
+  });
+  
+  router.post("/api/addAccount", async (req, res) => {
+    if (req.isAuthenticated()) {
+      try {
+        const loggedUser = await User.findById(req.session.passport.user);
+        const { accountNumber } = req.body;
+  
+        // Validate if account number is user's own
+        if (loggedUser.accountNumber === Number(accountNumber)) {
+          req.flash('error', 'You cannot add your own account number.');
+          return res.redirect("/savedAccounts");
+        }
+  
+        // Validate if account number is already saved
+        const isAlreadySaved = loggedUser.savedAccounts.some(
+          acc => acc.accountNumber === Number(accountNumber)
+        );
+  
+        if (isAlreadySaved) {
+          req.flash('error', 'This account number is already saved.');
+          return res.redirect("/savedAccounts");
+        }
+  
+        // Find the owner of the account number
+        const accountOwner = await User.findOne({ accountNumber: Number(accountNumber) });
+  
+        if (!accountOwner) {
+          req.flash('error', 'No user found with this account number.');
+          return res.redirect("/savedAccounts");
+        }
+  
+        // Add the account to savedAccounts
+        await User.findByIdAndUpdate(loggedUser._id, {
+          $push: {
+            savedAccounts: { accountNumber: Number(accountNumber), ownerId: accountOwner._id }
+          }
+        });
+  
+        req.flash('success', 'Account added successfully.');
+        res.redirect("/savedAccounts");
+      } catch (error) {
+        console.error("Error adding account:", error);
+        req.flash('error', 'An error occurred while adding the account.');
+        res.status(500).redirect("/savedAccounts");
+      }
+    } else {
+      res.redirect("/login");
+    }
+  });
   
 module.exports = router;
