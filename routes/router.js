@@ -147,6 +147,7 @@ router.get("/dashboard", async (req, res) => {
         formattedExpiry,
         transactions,
         userSavings,
+        wdMessages: req.flash("wdMessages"),
       });
     } catch (error) {
       console.error("Error fetching user:", error);
@@ -560,6 +561,63 @@ router.post("/api/addfunds/savings", async (req, res) => {
       console.error("Error adding savings:", error);
       req.flash("sdMessages", ["An error occurred while adding the savings."]);
       res.status(500).redirect("/addfunds/savings");
+    }
+  } else {
+    res.redirect("/login");
+  }
+});
+
+router.post("/api/addfunds/withdrawsavings", async (req, res) => {
+  if (req.isAuthenticated()) {
+    try {
+      const loggedUser = await User.findById(req.session.passport.user);
+      const { savingsAmount, savingsTitle, savingsTarget, accesscode } = req.body;
+
+      // Ensure there's a savings balance to withdraw from
+      if (loggedUser.savingsAmount <= 0) {
+        req.flash("wdMessages", ["No savings to withdraw from."]);
+        return res.redirect("/dashboard");
+      }
+
+      // Check the access code
+      const isCodeMatch = await bcrypt.compare(accesscode, loggedUser.accesscode);
+      if (!isCodeMatch) {
+        req.flash("wdMessages", ["Incorrect access code"]);
+        return res.redirect("/dashboard");
+      }
+
+      // Process the withdrawal
+      if (savingsAmount <= 0) {
+        req.flash("wdMessages", ["Amount must be greater than 0."]);
+        return res.redirect("/dashboard");
+      }
+
+      if (savingsAmount > loggedUser.savingsAmount) {
+        req.flash("wdMessages", ["Insufficient funds."]);
+        return res.redirect("/dashboard");
+      }
+
+      loggedUser.savingsAmount -= Number(savingsAmount);
+      loggedUser.balance += Number(savingsAmount);
+      loggedUser.savingsTarget = 0;
+      const history = new transactionHistory({
+        sender: loggedUser.accountNumber,
+        senderName: loggedUser.name,
+        receiver: loggedUser.accountNumber,
+        receiverName: "Savings (" + (savingsTitle || "N/A") + ")",
+        transactionType: "Savings Withdrawal (DB)",
+        amount: savingsAmount,
+      });
+      loggedUser.savingsTitle = "";
+      await loggedUser.save();
+      await history.save();
+
+      req.flash("wdMessages", ["Savings withdrawn successfully."]);
+      res.redirect("/dashboard?success=true");
+    } catch (error) {
+      console.error("Error withdrawing savings:", error);
+      req.flash("wdMessages", ["An error occurred while withdrawing the savings."]);
+      res.status(500).redirect("/dashboard");
     }
   } else {
     res.redirect("/login");
