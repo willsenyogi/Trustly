@@ -7,7 +7,10 @@
         <div class="funds-showcase">
           <h1>Available Balance</h1>
           <p>Account Number : <%= loggedUser.accountNumber %></p>
-          <h2><%= new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(loggedUser.balance) %></h2>
+          <h2>
+            <%= new Intl.NumberFormat('id-ID', { style: 'currency', currency:
+            'IDR' }).format(loggedUser.balance) %>
+          </h2>
           <div class="transfer-button">
             <a href="/transfer" id="showcase-button">Transfer Funds</a>
             <a href="/transactions" id="showcase-button">View Transactions</a>
@@ -17,7 +20,7 @@
         <div class="cards-showcase">
           <h1>Your Card</h1>
           <p><%= loggedUser.cardType.toUpperCase() %></p>
-          <img src="/assets/card.png">
+          <img src="/assets/card.png" />
           <p>Valid until <%= formattedExpiry %></p>
           <a href="#" id="showcase-button">See Card Detail</a>
           <a href="#" id="showcase-button">Debit Card Promos</a>
@@ -25,12 +28,24 @@
 
         <div class="deposit-showcase">
           <h1>Saving Goals</h1>
+          <% if (loggedUser) { %>
+          <p><%= loggedUser.savingsTitle %></p>
           <p>Total Savings</p>
-          <h2><%= new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(loggedUser.deposit) %></h2>
-          <p>Tenor : 6 Months</p>
-          <a href="#" id="showcase-button">Add Funds</a>
-          <a href="#" id="showcase-button">Withdraw</a>
-          <a href="#" id="showcase-button">See Details</a>
+          <h2>
+            <%= new Intl.NumberFormat('id-ID', { style: 'currency', currency:
+            'IDR' }).format(loggedUser.savingsAmount || 0) %>
+          </h2>
+          <p>Savings Target: <%= new Intl.NumberFormat('id-ID', { style: 'currency', currency:
+            'IDR' }).format(loggedUser.savingsTarget || 0) %></p>
+          <% } else { %>
+          <p>Total Savings</p>
+          <h2>
+            <%= new Intl.NumberFormat('id-ID', { style: 'currency', currency:
+            'IDR' }).format(0) %>
+          </h2>
+          <% } %>
+
+          <a href="/addfunds/savings" id="showcase-button">Configure</a>
         </div>
 
         <div class="chart-showcase">
@@ -45,7 +60,7 @@
 <script>
   document.addEventListener('DOMContentLoaded', function () {
       const transactions = <%- JSON.stringify(transactions) %>;
-      
+
       // Filter the last 30 days of transactions
       const today = new Date();
       const last30Days = transactions.filter(transaction => {
@@ -54,7 +69,7 @@
       });
 
       // Count transactions by type
-      const transactionTypes = ['Transfer (CR)', 'Transfer (DB)', 'Time Deposit (CR)', 'Time Deposit (DB)'];
+      const transactionTypes = ['Transfer (CR)', 'Transfer (DB)', 'Savings Deposit (CR)', 'Savings Deposit (DB)'];
       const transactionCounts = transactionTypes.map(type => {
         return last30Days.filter(transaction => transaction.transactionType === type).length;
       });
