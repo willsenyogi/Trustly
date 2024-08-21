@@ -40,7 +40,7 @@
     // Handle form submission
     const form = document.getElementById('transferForm');
     form.addEventListener('submit', function(event) {
-      event.preventDefault(); // Prevent the form from submitting immediately
+      event.preventDefault();
 
       Swal.fire({
         title: 'Enter Access Code',
@@ -56,17 +56,15 @@
           if (!value) {
             return 'You need to enter the access code!';
           }
-          // Optionally add more validation here
         }
       }).then((result) => {
         if (result.isConfirmed) {
-          // Add the access code to the form data
           const input = document.createElement('input');
           input.type = 'hidden';
           input.name = 'accesscode';
           input.value = result.value;
           form.appendChild(input);
-          form.submit(); // Submit the form after adding the access code
+          form.submit(); 
         }
       });
     });
