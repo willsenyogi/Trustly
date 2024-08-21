@@ -186,13 +186,15 @@ router.get("/profile", async (req, res) => {
 router.get("/transfer", async (req, res) => {
   if (req.isAuthenticated()) {
     try {
-      const loggedUser = await User.findById(req.session.passport.user);
+      const loggedUser = await User.findById(req.session.passport.user).populate('savedAccounts.ownerId');
+      const savedAccounts = loggedUser.savedAccounts;
       res.render("transfer", {
         title: "Trustly - Transfer",
         showHeader: false,
         showFooter: false,
         showDashboardNav: true,
         loggedUser,
+        savedAccounts,
         transfererror: req.flash('transfererror'),
       });
     } catch (error) {
@@ -266,7 +268,8 @@ router.post("/transfer", async (req, res) => {
         });
         await receiverHistory.save();
   
-        res.redirect("/dashboard");
+        res.redirect('/transfer?success=true');
+
   
         console.log(`User ${loggedUser.name} transferred ${transferAmount} to account ${targetAccountObj.accountNumber}`);
       } catch (error) {
@@ -439,5 +442,6 @@ router.post("/transfer", async (req, res) => {
     }
   });
   
+
   
 module.exports = router;

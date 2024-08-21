@@ -1,3 +1,4 @@
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <h1>Current Balance : <%= new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(loggedUser.balance) %></h1>
 <% if (transfererror && transfererror.length > 0) { %>
     <div style="color: red;">
@@ -5,10 +6,34 @@
         <p><%= msg %></p>
       <% }); %>
     </div>
-  <% } %>
+<% } %>
 <form action="/transfer" method="POST">
-    <input type="number" name="accountNumber" placeholder="Account Number" required style="height: 70px; font-size: larger;">
+    <label for="accountNumber">Select Account:</label>
+    <select name="accountNumber" id="accountNumber" required style="height: 70px; font-size: larger;">
+      <% savedAccounts.forEach(function(account) { %>
+        <option value="<%= account.accountNumber %>"><%= account.accountNumber %> - <%= account.ownerId.name %></option>
+      <% }); %>
+    </select>
     <input type="number" name="transferAmount" placeholder="Transfer Amount" required style="height: 70px; font-size: larger;">
     <input type="submit" value="Transfer" style="height: 70px; font-size: larger; background-color: black; color: white; border: 2px solid white;">
 </form>
 <a href="/savedAccounts" class="logout-button">Add new account</a>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('success') === 'true') {
+      Swal.fire({
+        icon: 'success',
+        title: 'Transfer Successful',
+        text: 'Your transfer was completed successfully.',
+        confirmButtonText: 'OK'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // Redirect to the dashboard
+          window.location.href = '/dashboard';
+        }
+      });
+    }
+  });
+</script>
