@@ -1,49 +1,145 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <% if (loggedUser && loggedUser.savingsTitle) { %>
-    <p><%= loggedUser.savingsTitle %></p>
-    <p>Total Savings Balance</p>
-    <h2><%= new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(loggedUser.savingsAmount || 0) %></h2>
-    <p>Savings Target : <%= new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(loggedUser.savingsTarget || 0) %></p>
+<p><%= loggedUser.savingsTitle %></p>
+<p>Total Savings Balance</p>
+<h2>
+  <%= new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR'
+  }).format(loggedUser.savingsAmount || 0) %>
+</h2>
+<p>
+  Savings Target : <%= new Intl.NumberFormat('id-ID', { style: 'currency',
+  currency: 'IDR' }).format(loggedUser.savingsTarget || 0) %>
+</p>
 <% } else { %>
-    <p>Total Savings Balance</p>
-    <h2><%= new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(0) %></h2>
+<p>Total Savings Balance</p>
+<h2>
+  <%= new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR'
+  }).format(0) %>
+</h2>
 <% } %>
 
 <form action="/api/addfunds/savings" method="POST">
   <% if (loggedUser.savingsTitle && loggedUser.savingsTarget) { %>
-    <input type="hidden" name="savingsTitle" placeholder="Savings Title" value="<%= loggedUser.savingsTitle %>" style="height: 40px; width: 300px; margin-bottom: 10px;"> <br>
-    <input type="number" name="savingsAmount" placeholder="Deposit Amount" required style="height: 70px; font-size: larger;">
-    <input type="submit" value="Deposit" style="height: 70px; font-size: larger; background-color: black; color: white; border: 2px solid white;">
-  <% } else { %>    
-    <input type="text" name="savingsTitle" placeholder="Savings Title" style="height: 40px; width: 300px; margin-bottom: 10px;"> <br>
-    <input type="number" name="savingsTarget" placeholder="Savings Target" style="height: 40px; width: 300px; margin-bottom: 10px;"> <br>
-    <input type="number" name="savingsAmount" placeholder="Deposit Amount" required style="height: 70px; font-size: larger;">
-    <input type="submit" value="Deposit" style="height: 70px; font-size: larger; background-color: black; color: white; border: 2px solid white;">
+  <input
+    type="hidden"
+    name="savingsTitle"
+    placeholder="Savings Title"
+    value="<%= loggedUser.savingsTitle %>"
+    style="height: 40px; width: 300px; margin-bottom: 10px"
+  />
+  <br />
+  <input
+    type="number"
+    name="savingsAmount"
+    placeholder="Deposit Amount"
+    required
+    style="height: 70px; font-size: larger"
+  />
+  <input
+    type="submit"
+    value="Deposit"
+    style="
+      height: 70px;
+      font-size: larger;
+      background-color: black;
+      color: white;
+      border: 2px solid white;
+    "
+  />
+  <% } else { %>
+  <input
+    type="text"
+    name="savingsTitle"
+    placeholder="Savings Title"
+    style="height: 40px; width: 300px; margin-bottom: 10px"
+  />
+  <br />
+  <input
+    type="number"
+    name="savingsTarget"
+    placeholder="Savings Target"
+    style="height: 40px; width: 300px; margin-bottom: 10px"
+  />
+  <br />
+  <input
+    type="number"
+    name="savingsAmount"
+    placeholder="Deposit Amount"
+    required
+    style="height: 70px; font-size: larger"
+  />
+  <input
+    type="submit"
+    value="Deposit"
+    style="
+      height: 70px;
+      font-size: larger;
+      background-color: black;
+      color: white;
+      border: 2px solid white;
+    "
+  />
   <% } %>
 </form>
 
 <% if (sdMessages && sdMessages.length > 0) { %>
-  <div style="color: red;">
-    <% sdMessages.forEach(function(msg) { %>
-      <p><%= msg %></p>
-    <% }); %>
-  </div>
+<div style="color: red">
+  <% sdMessages.forEach(function(msg) { %>
+  <p><%= msg %></p>
+  <% }); %>
+</div>
 <% } %>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener("DOMContentLoaded", function () {
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('success') === 'true') {
+    if (urlParams.get("success") === "true") {
       Swal.fire({
-        icon: 'success',
-        title: 'Transfer Successful',
-        text: 'Your transfer was completed successfully.',
-        confirmButtonText: 'OK'
+        icon: "success",
+        title: "Deposit Successful",
+        text: "Your savings deposit was completed successfully.",
+        confirmButtonText: "OK",
       }).then((result) => {
         if (result.isConfirmed) {
-          // Redirect to the dashboard
-          window.location.href = '/dashboard';
+          // Redirect to the dashboard or another relevant page
+          window.location.href = "/dashboard";
         }
+      });
+    }
+
+    // Handle form submission for adding funds to savings
+    const form = document.querySelector('form[action="/api/addfunds/savings"]');
+    if (form) {
+      form.addEventListener("submit", function (event) {
+        event.preventDefault(); // Prevent the form from submitting immediately
+
+        Swal.fire({
+          title: "Enter Access Code",
+          input: "password",
+          inputLabel: "Access Code",
+          inputAttributes: {
+            autocapitalize: "off",
+          },
+          showCancelButton: true,
+          confirmButtonText: "Submit",
+          cancelButtonText: "Cancel",
+          inputValidator: (value) => {
+            if (!value) {
+              return "You need to enter the access code!";
+            }
+            // Optionally add more validation here
+          },
+        }).then((result) => {
+          if (result.isConfirmed) {
+            // Add the access code to the form data
+            const input = document.createElement("input");
+            input.type = "hidden";
+            input.name = "accesscode";
+            input.value = result.value;
+            form.appendChild(input);
+            form.submit(); // Submit the form after adding the access code
+          }
+        });
       });
     }
   });

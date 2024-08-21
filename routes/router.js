@@ -221,7 +221,7 @@ router.post("/transfer", async (req, res) => {
   if (req.isAuthenticated()) {
     try {
       const loggedUser = await User.findById(req.session.passport.user);
-      const { accountNumber, transferAmount } = req.body;
+      const { accountNumber, transferAmount, accesscode } = req.body;
 
       // Check if transferAmount is valid
       if (isNaN(transferAmount) || transferAmount <= 0) {
@@ -518,7 +518,7 @@ router.post("/api/addfunds/savings", async (req, res) => {
   if (req.isAuthenticated()) {
     try {
       const loggedUser = await User.findById(req.session.passport.user);
-      const { savingsAmount, savingsTitle, savingsTarget } = req.body;
+      const { savingsAmount, savingsTitle, savingsTarget, accesscode } = req.body;
 
       if (savingsAmount <= 0) {
         req.flash("sdMessages", ["Amount must be greater than 0."]);
@@ -527,6 +527,12 @@ router.post("/api/addfunds/savings", async (req, res) => {
 
       if (savingsAmount > loggedUser.balance) {
         req.flash("sdMessages", ["Insufficient funds."]);
+        return res.redirect("/addfunds/savings");
+      }
+
+      const isCodeMatch = await bcrypt.compare(accesscode, loggedUser.accesscode);
+      if (!isCodeMatch) {
+        req.flash("sdMessages", ["Incorrect access code"]);
         return res.redirect("/addfunds/savings");
       }
 
