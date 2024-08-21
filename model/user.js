@@ -42,14 +42,10 @@ const userSchema = new mongoose.Schema({
         type: Number,
         default: 20000000
     },
-    deposit: {
-        type: Number,
-        default: 0
-    },
-    tenor: {
-        type: Number,
-        default: 0
-    },
+    savings: [{
+        savingsTitle: String,
+        amount: Number
+    }],
     savedAccounts: [{
         accountNumber: Number,
         ownerId: {
