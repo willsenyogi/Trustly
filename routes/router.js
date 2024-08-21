@@ -379,7 +379,7 @@ router.post("/transfer", async (req, res) => {
           showDashboardNav: true,
           loggedUser,
           savedAccounts,
-          messages: req.flash('success'),
+          messages: req.flash('messages'),
         });
       } catch (error) {
         console.error("Error fetching user:", error);
@@ -396,47 +396,48 @@ router.post("/transfer", async (req, res) => {
         const loggedUser = await User.findById(req.session.passport.user);
         const { accountNumber } = req.body;
   
-        // Validate if account number is user's own
+        let messages = [];
+  
         if (loggedUser.accountNumber === Number(accountNumber)) {
-          req.flash('error', 'You cannot add your own account number.');
-          return res.redirect("/savedAccounts");
+          messages.push('You cannot add your own account number.');
         }
   
-        // Validate if account number is already saved
         const isAlreadySaved = loggedUser.savedAccounts.some(
           acc => acc.accountNumber === Number(accountNumber)
         );
   
         if (isAlreadySaved) {
-          req.flash('error', 'This account number is already saved.');
-          return res.redirect("/savedAccounts");
+          messages.push('This account number is already saved.');
         }
   
-        // Find the owner of the account number
         const accountOwner = await User.findOne({ accountNumber: Number(accountNumber) });
   
         if (!accountOwner) {
-          req.flash('error', 'No user found with this account number.');
+          messages.push('No user found with this account number.');
+        }
+  
+        if (messages.length > 0) {
+          req.flash('messages', messages);
           return res.redirect("/savedAccounts");
         }
   
-        // Add the account to savedAccounts
         await User.findByIdAndUpdate(loggedUser._id, {
           $push: {
             savedAccounts: { accountNumber: Number(accountNumber), ownerId: accountOwner._id }
           }
         });
   
-        req.flash('success', 'Account added successfully.');
+        req.flash('messages', ['Account added successfully.']);
         res.redirect("/savedAccounts");
       } catch (error) {
         console.error("Error adding account:", error);
-        req.flash('error', 'An error occurred while adding the account.');
+        req.flash('messages', ['An error occurred while adding the account.']);
         res.status(500).redirect("/savedAccounts");
       }
     } else {
       res.redirect("/login");
     }
   });
+  
   
 module.exports = router;
