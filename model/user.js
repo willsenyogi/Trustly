@@ -50,9 +50,10 @@ const userSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
-    savedAccounts: {
-        type: Array
-    },
+    savedAccounts: [{
+        accountNumber: Number,
+        ownerId: mongoose.Schema.Types.ObjectId
+      }],
     token: {
         type: String,
         default: "112233",
