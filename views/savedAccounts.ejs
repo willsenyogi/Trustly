@@ -19,12 +19,14 @@
     <input type="submit" value="+ New Account" style="height: 40px; font-size: larger; background-color: black; color: white; border: 2px solid white;">
   </ul>
 </nav>
-<% if (messages.error) { %>
-  <div class="alert alert-danger"><%= messages.error %></div>
+<% if (messages && messages.length > 0) { %>
+  <div style="color: red;">
+    <% messages.forEach(function(msg) { %>
+      <p><%= msg %></p>
+    <% }); %>
+  </div>
 <% } %>
-<% if (messages.success) { %>
-  <div class="alert alert-success"><%= messages.success %></div>
-<% } %>
+
 
 <div class="transactions-list" id="transactions">
   <table class="stripe hover order-column row-border" id="transactions-table">

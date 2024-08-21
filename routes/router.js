@@ -370,7 +370,7 @@ router.post("/transfer", async (req, res) => {
   router.get("/savedAccounts", async (req, res) => {
     if (req.isAuthenticated()) {
       try {
-        const loggedUser = await User.findById(req.session.passport.user);
+        const loggedUser = await User.findById(req.session.passport.user).populate('savedAccounts.ownerId');
         const savedAccounts = loggedUser.savedAccounts;
         res.render("savedAccounts", {
           title: "Trustly - Saved Accounts",
