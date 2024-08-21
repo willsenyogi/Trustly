@@ -89,7 +89,7 @@
     return (today - transactionDate) <= (30 * 24 * 60 * 60 * 1000);
   });
 
-  const transactionTypes = ['Transfer (CR)', 'Transfer (DB)', 'Savings Deposit (CR)', 'Savings Deposit (DB)'];
+  const transactionTypes = ['Transfer (CR)', 'Transfer (DB)', 'Savings Deposit (CR)', 'Savings Withdrawal (DB)'];
   const transactionCounts = transactionTypes.map(type => {
     return last30Days.filter(transaction => transaction.transactionType === type).length;
   });
