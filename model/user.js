@@ -42,10 +42,17 @@ const userSchema = new mongoose.Schema({
         type: Number,
         default: 20000000
     },
-    savings: [{
-        savingsTitle: String,
-        amount: Number
-    }],
+    savingsTitle: {
+        type: String
+    },
+    savingsAmount: {
+        type: Number,
+        default: 0
+    },
+    savingsTarget: {
+        type: Number,
+        default: 0
+    },
     savedAccounts: [{
         accountNumber: Number,
         ownerId: {
