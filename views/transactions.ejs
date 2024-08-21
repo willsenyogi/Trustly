@@ -38,7 +38,7 @@
       <button id="filter-transfer-cr">Transfer (CR)</button>
       <button id="filter-transfer-db">Transfer (DB)</button>
       <button id="filter-time-deposit-cr">Savings Deposit (CR)</button>
-      <button id="filter-time-deposit-db">Savings Deposit (DB)</button>
+      <button id="filter-time-deposit-db">Savings Withdrawal (DB)</button>
       <button id="filter-reset">Reset Filter</button>
     </div>
   </div>
@@ -157,7 +157,7 @@
       filterByTransactionType('Savings Deposit (CR)');
     });
     $('#filter-time-deposit-db').on('click', function () {
-      filterByTransactionType('Savings Deposit (DB)');
+      filterByTransactionType('Savings Withdrawal (DB)');
     });
 
     function filterByTransactionType(type) {
