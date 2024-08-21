@@ -7,7 +7,7 @@
       <% }); %>
     </div>
 <% } %>
-<form action="/transfer" method="POST">
+<form id="transferForm" action="/transfer" method="POST">
     <label for="accountNumber">Select Account:</label>
     <select name="accountNumber" id="accountNumber" required style="height: 70px; font-size: larger;">
       <% savedAccounts.forEach(function(account) { %>
@@ -22,6 +22,8 @@
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     const urlParams = new URLSearchParams(window.location.search);
+    
+    // Show success message if transfer was successful
     if (urlParams.get('success') === 'true') {
       Swal.fire({
         icon: 'success',
@@ -30,10 +32,43 @@
         confirmButtonText: 'OK'
       }).then((result) => {
         if (result.isConfirmed) {
-          // Redirect to the dashboard
           window.location.href = '/dashboard';
         }
       });
     }
+
+    // Handle form submission
+    const form = document.getElementById('transferForm');
+    form.addEventListener('submit', function(event) {
+      event.preventDefault(); // Prevent the form from submitting immediately
+
+      Swal.fire({
+        title: 'Enter Access Code',
+        input: 'password',
+        inputLabel: 'Access Code',
+        inputAttributes: {
+          autocapitalize: 'off'
+        },
+        showCancelButton: true,
+        confirmButtonText: 'Submit',
+        cancelButtonText: 'Cancel',
+        inputValidator: (value) => {
+          if (!value) {
+            return 'You need to enter the access code!';
+          }
+          // Optionally add more validation here
+        }
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // Add the access code to the form data
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = 'accesscode';
+          input.value = result.value;
+          form.appendChild(input);
+          form.submit(); // Submit the form after adding the access code
+        }
+      });
+    });
   });
 </script>
