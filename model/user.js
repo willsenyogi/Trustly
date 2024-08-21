@@ -52,7 +52,10 @@ const userSchema = new mongoose.Schema({
     },
     savedAccounts: [{
         accountNumber: Number,
-        ownerId: mongoose.Schema.Types.ObjectId
+        ownerId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'users'
+        }
       }],
     token: {
         type: String,
