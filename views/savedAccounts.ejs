@@ -18,6 +18,12 @@
     <input type="text" name="accountNumber" placeholder="Account Number" required style="height: 40px; font-size: larger;">
     <input type="submit" value="+ New Account" style="height: 40px; font-size: larger; background-color: black; color: white; border: 2px solid white;">
   </ul>
+  <% if (messages.error) { %>
+    <div class="alert alert-danger"><%= messages.error %></div>
+  <% } %>
+  <% if (messages.success) { %>
+    <div class="alert alert-success"><%= messages.success %></div>
+  <% } %>
 </nav>
 
 <div class="transactions-list" id="transactions">
