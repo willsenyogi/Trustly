@@ -37,8 +37,8 @@
     <div class="transactions-list-header-left">
       <button id="filter-transfer-cr">Transfer (CR)</button>
       <button id="filter-transfer-db">Transfer (DB)</button>
-      <button id="filter-time-deposit-cr">Time Deposit (CR)</button>
-      <button id="filter-time-deposit-db">Time Deposit (DB)</button>
+      <button id="filter-time-deposit-cr">Savings Deposit (CR)</button>
+      <button id="filter-time-deposit-db">Savings Deposit (DB)</button>
       <button id="filter-reset">Reset Filter</button>
     </div>
   </div>
@@ -59,7 +59,7 @@
         <td><%= transaction.receiver %> (<%= transaction.receiverName %>)</td>
         <td><%= transaction.transactionType %></td>
         <td>
-          <%= transaction.transactionType === 'Transfer (CR)' || transaction.transactionType === 'Time Deposit (CR)' 
+          <%= transaction.transactionType === 'Transfer (CR)' || transaction.transactionType === 'Savings Deposit (CR)' 
               ? '-' 
               : '+' %>
           <%= new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(transaction.amount) %>
@@ -154,10 +154,10 @@
       filterByTransactionType('Transfer (DB)');
     });
     $('#filter-time-deposit-cr').on('click', function () {
-      filterByTransactionType('Time Deposit (CR)');
+      filterByTransactionType('Savings Deposit (CR)');
     });
     $('#filter-time-deposit-db').on('click', function () {
-      filterByTransactionType('Time Deposit (DB)');
+      filterByTransactionType('Savings Deposit (DB)');
     });
 
     function filterByTransactionType(type) {
