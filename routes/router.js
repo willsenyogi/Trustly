@@ -10,6 +10,7 @@ const {
   generateCardNumber,
 } = require("../controller/accountController");
 const transactionHistory = require("../model/transactionHistory");
+const sendMail = require("../controller/otpmailer");
 
 router.get("/", async (req, res) => {
   res.render("homepage", {
@@ -17,25 +18,6 @@ router.get("/", async (req, res) => {
     showDashboardNav: false,
   });
 });
-
-router.get("/login", async (req, res) => {
-  res.render("login", {
-    title: "Trustly - Login",
-    showHeader: false,
-    showFooter: false,
-    showDashboardNav: false,
-    error: req.flash("error"),
-  });
-});
-
-router.post(
-  "/login/submit",
-  passport.authenticate("local", {
-    successRedirect: "/dashboard",
-    failureRedirect: "/login",
-    failureFlash: true,
-  })
-);
 
 router.get("/signup", async (req, res) => {
   res.render("signup", {
@@ -80,6 +62,44 @@ router.post("/signup/submit", async (req, res) => {
     });
   }
 
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+  req.session.otp = otp;
+  req.session.userData = { name, email, password, accesscode, cardType };
+
+  try {
+    await sendMail(email, "Your OTP for Trustly Signup", `Your OTP code is ${otp}`);
+    res.redirect("/signup/emailverification");
+  } catch (error) {
+    console.log(error);
+    res.status(500).send("An error occurred while sending the OTP email.");
+  }
+});
+
+router.get("/signup/emailverification", (req, res) => {
+  res.render("emailverification", {
+    title: "Trustly - Email Verification",
+    showHeader: false,
+    showFooter: false,
+    showDashboardNav: false,
+    errors: [],
+  });
+});
+
+router.post("/signup/emailverification", async (req, res) => {
+  const { otp } = req.body;
+  const { name, email, password, accesscode, cardType } = req.session.userData;
+
+  if (otp !== req.session.otp) {
+    return res.render("emailverification", {
+      title: "Trustly - Email Verification",
+      showHeader: false,
+      showFooter: false,
+      showDashboardNav: false,
+      errors: ["Invalid OTP. Please try again."],
+    });
+  }
+
   const cardExpiry = new Date();
   cardExpiry.setFullYear(cardExpiry.getFullYear() + 5);
   cardExpiry.setMonth(cardExpiry.getMonth() + 1);
@@ -117,6 +137,27 @@ router.post("/signup/submit", async (req, res) => {
     res.status(500).send("An error occurred while processing your request.");
   }
 });
+
+router.get("/login", async (req, res) => {
+  res.render("login", {
+    title: "Trustly - Login",
+    showHeader: false,
+    showFooter: false,
+    showDashboardNav: false,
+    error: req.flash("error"),
+  });
+});
+
+router.post(
+  "/login/submit",
+  passport.authenticate("local", {
+    successRedirect: "/dashboard",
+    failureRedirect: "/login",
+    failureFlash: true,
+  })
+);
+
+module.exports = router;
 
 router.get("/dashboard", async (req, res) => {
   if (req.isAuthenticated()) {
@@ -622,6 +663,35 @@ router.post("/api/addfunds/withdrawsavings", async (req, res) => {
   } else {
     res.redirect("/login");
   }
+});
+
+router.get("/resetpassword", (req, res) => {
+  res.render("resetpassword", {
+    title: "Trustly - Forgot Password",
+    showHeader: false,
+    showFooter: false,
+    showDashboardNav: false,
+    errors: req.flash("error"),
+  });
+});
+
+router.post("/api/resetpassword/submit", async (req, res) => {
+  const loggedUser = await User.findById(req.session.passport.user);
+  const { oldpassword, newpassword } = req.body;
+
+  const isPasswordMatch = await bcrypt.compare(oldpassword, loggedUser.password);
+
+  if (!isPasswordMatch) {
+    req.flash("error", ["Incorrect password."]);
+    return res.redirect("/resetpassword");
+  }
+
+  loggedUser.password = await bcrypt.hash(newpassword, 10);
+
+  await loggedUser.save();
+
+  req.flash("success", ["Password changed successfully."]);
+  res.redirect("/profile");
 });
 
 
