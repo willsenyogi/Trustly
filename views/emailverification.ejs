@@ -1,0 +1,30 @@
+<div
+  style="
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    flex-direction: row;
+    width: 100vw;
+    flex-wrap: wrap;
+  "
+>
+  <img
+    src="/assets/trustly-logo.png"
+    style="border-right: 2px solid white; margin: 30px"
+  />
+  <form action="/signup/emailverification" method="POST">
+    <label for="otp">Enter OTP:</label>
+    <input type="text" id="otp" name="otp" required />
+    <% if (errors && errors.length > 0) { %>
+    <div style="color: red">
+      <ul>
+        <% errors.forEach(function(error) { %>
+        <li><%= error %></li>
+        <% }) %>
+      </ul>
+    </div>
+    <% } %>
+    <button type="submit">Verify OTP</button>
+  </form>
+</div>
