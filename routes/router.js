@@ -562,11 +562,6 @@ router.post("/api/addfunds/savings", async (req, res) => {
       const loggedUser = await User.findById(req.session.passport.user);
       const { savingsAmount, savingsTitle, savingsTarget, accesscode } = req.body;
 
-      if (savingsAmount <= 0) {
-        req.flash("sdMessages", ["Amount must be greater than 0."]);
-        return res.redirect("/addfunds/savings");
-      }
-
       if (savingsAmount > loggedUser.balance) {
         req.flash("sdMessages", ["Insufficient funds."]);
         return res.redirect("/addfunds/savings");
@@ -592,7 +587,7 @@ router.post("/api/addfunds/savings", async (req, res) => {
         receiver: loggedUser.accountNumber,
         receiverName: "Savings (" + (savingsTitle || "N/A") + ")",
         transactionType: "Savings Deposit (CR)",
-        amount: savingsAmount,
+        amount: savingsAmount || 0,
       });
 
       await history.save(); // Ensure transaction history is saved
