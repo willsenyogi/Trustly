@@ -603,28 +603,16 @@ router.post("/api/addfunds/savings", async (req, res) => {
   }
 });
 
-router.post("/api/addfunds/withdrawsavings", async (req, res) => {
+router.post("/api/addfunds/withdrawsavings/close", async (req, res) => {
   if (req.isAuthenticated()) {
     try {
       const loggedUser = await User.findById(req.session.passport.user);
       const { savingsAmount, savingsTitle, savingsTarget, accesscode } = req.body;
 
-      // Ensure there's a savings balance to withdraw from
-      if (loggedUser.savingsAmount <= 0) {
-        req.flash("wdMessages", ["No savings to withdraw from."]);
-        return res.redirect("/dashboard");
-      }
-
       // Check the access code
       const isCodeMatch = await bcrypt.compare(accesscode, loggedUser.accesscode);
       if (!isCodeMatch) {
         req.flash("wdMessages", ["Incorrect access code"]);
-        return res.redirect("/dashboard");
-      }
-
-      // Process the withdrawal
-      if (savingsAmount <= 0) {
-        req.flash("wdMessages", ["Amount must be greater than 0."]);
         return res.redirect("/dashboard");
       }
 
@@ -655,6 +643,61 @@ router.post("/api/addfunds/withdrawsavings", async (req, res) => {
       req.flash("wdMessages", ["An error occurred while withdrawing the savings."]);
       res.status(500).redirect("/dashboard");
     }
+  } else {
+    res.redirect("/login");
+  }
+});
+
+router.get("/addfunds/savings/withdraw", async (req, res) => {
+  try {
+   if (req.isAuthenticated()) {
+    const loggedUser = await User.findById(req.session.passport.user);
+    res.render("withdrawsavings", {
+      title: "Trustly - Withdraw Funds",
+      showHeader: false,
+      showFooter: false,
+      showDashboardNav: true,
+      loggedUser,
+      wdsMessages: req.flash("wdsMessages"),
+    });
+   } else {
+    res.redirect("/login");
+   }
+  } catch (error) {
+    console.error("Error loading withdraw savings page:", error);
+    res.status(500).send("An error occurred while loading the withdraw savings page.");
+  }
+});
+
+router.post("/api/addfunds/savings/withdraw", async (req, res) => {
+  if (req.isAuthenticated()) {
+    const loggedUser = await User.findById(req.session.passport.user);
+    const { withdrawAmount, savingsTitle, savingsTarget, accesscode } = req.body;
+    const isCodeMatch = await bcrypt.compare(accesscode, loggedUser.accesscode);
+    if (!isCodeMatch) {
+      req.flash("wdsMessages", ["Incorrect access code"]);
+      return res.redirect("/addfunds/savings/withdraw");
+    }
+
+    if (withdrawAmount > loggedUser.savingsAmount) {
+      req.flash("wdsMessages", ["Insufficient funds."]);
+      return res.redirect("/addfunds/savings/withdraw");
+    }
+
+    loggedUser.savingsAmount -= Number(withdrawAmount);
+    loggedUser.balance += Number(withdrawAmount);
+    const history = new transactionHistory({
+      sender: loggedUser.accountNumber,
+      senderName: loggedUser.name,
+      receiver: loggedUser.accountNumber,
+      receiverName: "Savings (" + (savingsTitle || "N/A") + ")",
+      transactionType: "Savings Withdrawal (DB)",
+      amount: withdrawAmount,
+    });
+    await loggedUser.save();
+    await history.save();
+    req.flash("wdsMessages", ["Savings withdrawn successfully."]);
+    res.redirect("/addfunds/savings/withdraw?success=true");
   } else {
     res.redirect("/login");
   }
