@@ -78,16 +78,14 @@ router.post("/api/resetpassword/submit", async (req, res) => {
       };
 
       const formattedDate = formatDate(Date.now());
-      
+
       sendMail(
         loggedUser.email,
         `Password Changed`,
         `Your password has been changed at ${formattedDate}`
       );
 
-      req.flash("profile-notification", [
-        "You just changed your password",
-      ]);
+      req.flash("profile-notification", ["You just changed your password"]);
       res.redirect("/profile");
     } else {
       res.redirect("/login");
@@ -105,7 +103,7 @@ router.get("/forgotpassword/pr", async (req, res) => {
       const otp = Math.floor(100000 + Math.random() * 900000);
       req.session.otpfgpr = otp;
       req.session.save();
-      sendMail(loggedUser.email, "OTP Code", "Your OTP code is: " + otp);
+      sendMail(loggedUser.email, "OTP Code for password reset", "Your OTP code is: " + otp);
       res.render("forgotpassword-pr", {
         title: "Trustly - Forgot Password",
         showHeader: false,
@@ -131,7 +129,7 @@ router.post("/api/forgotpassword/pr/submit", async (req, res) => {
       const loggedUser = await User.findById(req.session.passport.user);
       const { otpcodepr } = req.body;
       if (String(req.session.otpfgpr) !== otpcodepr) {
-        req.flash("fgprMessages", ["Incorrect OTP code."]);
+        req.flash("fgprMessages", ["Incorrect OTP code. New OTP code sent."]);
         return res.redirect("/forgotpassword/pr");
       } else {
         res.redirect("/forgotpassword/pr/otpconfirmed/true");
@@ -205,29 +203,27 @@ router.post(
         req.session.save();
 
         const formatDate = (timestamp) => {
-            const date = new Date(timestamp);
-    
-            return new Intl.DateTimeFormat("id-ID", {
-              day: "2-digit",
-              month: "2-digit",
-              year: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-              second: "2-digit",
-            }).format(date);
-          };
-    
-          const formattedDate = formatDate(Date.now());
-          
-          sendMail(
-            loggedUser.email,
-            `Password Changed`,
-            `Your password has been changed at ${formattedDate}`
-          );
+          const date = new Date(timestamp);
 
-        req.flash("profile-notification", [
-            "You just changed your password",
-          ]);
+          return new Intl.DateTimeFormat("id-ID", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+          }).format(date);
+        };
+
+        const formattedDate = formatDate(Date.now());
+
+        sendMail(
+          loggedUser.email,
+          `Password Changed`,
+          `Your password has been changed at ${formattedDate}`
+        );
+
+        req.flash("profile-notification", ["You just changed your password"]);
         res.redirect("/profile");
       } else {
         res.redirect("/login");
@@ -333,26 +329,139 @@ router.post("/profile/api/resetpassword/submit", async (req, res) => {
 });
 
 router.get("/profile/changeaccesscode", async (req, res) => {
-    try {
-      if (req.isAuthenticated()) {
-        const loggedUser = await User.findById(req.session.passport.user);
-        res.render("changeaccesscode", {
-          title: "Trustly - Change Access Code",
-          showHeader: false,
-          showFooter: false,
-          showDashboardNav: false,
-          loggedUser,
-          facMessages: req.flash("facMessages"),
-        });
-      } else {
-        res.redirect("/login");
-      }
-    } catch (error) {
-      console.error("Error loading change access code page:", error);
-      res
-        .status(500)
-        .send("An error occurred while loading page.");
+  try {
+    if (req.isAuthenticated()) {
+      const loggedUser = await User.findById(req.session.passport.user);
+      const otp = Math.floor(1000 + Math.random() * 9000);
+      req.session.cacotp = otp.toString(); 
+      sendMail(
+        loggedUser.email,
+        `Your One-Time Password (OTP) for access code change`,
+        `Your One-Time Password (OTP) is ${otp}`
+      );
+
+      res.render("changeaccesscode", {
+        title: "Trustly - Change Access Code",
+        showHeader: false,
+        showFooter: false,
+        showDashboardNav: false,
+        loggedUser,
+        cacMessages: req.flash("cacMessages"),
+      });
+    } else {
+      res.redirect("/login");
     }
-  });
+  } catch (error) {
+    console.error("Error loading change access code page:", error);
+    res.status(500).send("An error occurred while loading page.");
+  }
+});
+
+router.post("/api/profile/resetaccesscode/otpconfirm", async (req, res) => {
+  try {
+    if (req.isAuthenticated()) {
+      const loggedUser = await User.findById(req.session.passport.user);
+      const { cacotp } = req.body;
+
+      if (req.session.cacotp !== cacotp) {
+        req.flash("cacMessages", ["Invalid OTP. New OTP code sent."]);
+        return res.redirect("/profile/changeaccesscode");
+      } else {
+        res.redirect("/profile/resetaccesscode/otpconfirm/true");
+      }
+      
+    } else {
+      res.redirect("/login");
+    }
+  } catch (error) {
+    console.error("Error changing access code:", error);
+    res.status(500).send("An error occurred while changing the access code.");
+  }
+});
+
+router.get("/profile/resetaccesscode/otpconfirm/true", async (req, res) => {
+    try {
+        if (req.isAuthenticated()) {
+            const loggedUser = await User.findById(req.session.passport.user);
+            res.render("changeaccesscode-otpconfirmed", {
+                title: "Trustly - Reset Access Code",
+                showHeader: false,
+                showFooter: false,
+                showDashboardNav: false,
+                loggedUser,
+                cac2Messages: req.flash("cac2Messages"),
+            });
+        } else {
+            res.redirect("/login");
+        }
+    } catch (error) {
+        console.error("Error loading reset access code page:", error);
+        res.status(500).send("An error occurred while loading page.");
+    }
+});
+
+router.post("/api/profile/resetaccesscode/otpconfirm/true/change", async (req, res) => {
+    try {
+        if (req.isAuthenticated()) {
+            const loggedUser = await User.findById(req.session.passport.user);
+            const { oldaccesscode,newaccesscode } = req.body;
+            const isOldCodeMatch = await bcrypt.compare(oldaccesscode, loggedUser.accesscode);
+            const isNewCodeMatch = await bcrypt.compare(newaccesscode, loggedUser.accesscode);
+
+            if (!isOldCodeMatch) {
+                req.flash("cac2Messages", ["Incorrect old access code. Please try again."]);
+                return res.redirect("/profile/resetaccesscode/otpconfirm/true");
+            }
+            if (isNewCodeMatch) {
+                req.flash("cac2Messages", ["New access code cannot be the same as old access code. Please try again."]);
+                return res.redirect("/profile/resetaccesscode/otpconfirm/true");
+            }
+            if (oldaccesscode === newaccesscode) {
+                req.flash("cac2Messages", ["New access code cannot be the same as old access code. Please try again."]);
+                return res.redirect("/profile/resetaccesscode/otpconfirm/true");
+            }
+            if(newaccesscode.length < 6) {
+                req.flash("cac2Messages", ["New access code must be at least 6 characters long. Please try again."]);
+                return res.redirect("/profile/resetaccesscode/otpconfirm/true");
+            }
+
+            const newaccesscodeHash = await bcrypt.hash(newaccesscode, 10);
+            loggedUser.accesscode = newaccesscodeHash;
+            await loggedUser.save();
+            req.session.cacotp = null;
+            req.session.save();
+           
+            const formatDate = (timestamp) => {
+                const date = new Date(timestamp);
+        
+                return new Intl.DateTimeFormat("id-ID", {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  second: "2-digit",
+                }).format(date);
+              };
+        
+              const formattedDate = formatDate(Date.now());
+        
+              sendMail(
+                loggedUser.email,
+                `Your access code has been changed`,
+                `Your access code has been changed at ${formattedDate}`
+              );
+
+            req.flash("profile-notification", ["You just changed your access code"]);
+            res.redirect("/profile");
+        } else {
+            res.redirect("/login");
+        }
+    } catch (error) {
+        console.error("Error changing access code:", error);
+        res.status(500).send("An error occurred while changing the access code.");
+    }
+}); 
+        
 
 module.exports = router;
