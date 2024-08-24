@@ -19,7 +19,7 @@
     <p>Enter password:</p>
     <input name="password" style="width: 300px; height: 40px; border-radius: 20px;" type="password" required />
     <p>Enter access code:</p>
-    <input name="accesscode" style="width: 300px; height: 40px; border-radius: 20px;" type="password" required />
+    <input id="accesscode" name="accesscode" style="width: 300px; height: 40px; border-radius: 20px;" type="password" required />
    <% if (ceMessages && ceMessages.length > 0) { %>
     <div style="color: red">
       <ul>
@@ -37,3 +37,9 @@
     </button>
   </form>
 </div>
+
+<script>
+  document.getElementById('accesscode').addEventListener('input', function (e) {
+      this.value = this.value.replace(/[^0-9]/g, '');
+  });
+</script>

@@ -15,9 +15,9 @@
   />
   <form action="/api/profile/resetaccesscode/otpconfirm/true/change" method="POST">
     <p>Enter old access code :</p>
-    <input name="oldaccesscode" style="width: 300px; height: 40px; border-radius: 20px;" type="password" required /></a>
+    <input id="oldaccesscode" name="oldaccesscode" style="width: 300px; height: 40px; border-radius: 20px;" type="password" required /></a>
     <p>Enter new access code :</p>
-    <input name="newaccesscode" style="width: 300px; height: 40px; border-radius: 20px;" type="password" required /></a>
+    <input id="newaccesscode" name="newaccesscode" style="width: 300px; height: 40px; border-radius: 20px;" type="password" required /></a>
    <% if (cac2Messages && cac2Messages.length > 0) { %>
     <div style="color: red">
       <ul>
@@ -33,3 +33,13 @@
     </button>
   </form>
 </div>
+
+<script>
+  document.getElementById('oldaccesscode').addEventListener('input', function (e) {
+      this.value = this.value.replace(/[^0-9]/g, '');
+  });
+
+  document.getElementById('newaccesscode').addEventListener('input', function (e) {
+      this.value = this.value.replace(/[^0-9]/g, '');
+  });
+</script>
