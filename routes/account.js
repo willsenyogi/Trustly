@@ -64,7 +64,30 @@ router.post("/api/resetpassword/submit", async (req, res) => {
 
       await loggedUser.save();
 
-      req.flash("success", ["Password changed successfully."]);
+      const formatDate = (timestamp) => {
+        const date = new Date(timestamp);
+
+        return new Intl.DateTimeFormat("id-ID", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        }).format(date);
+      };
+
+      const formattedDate = formatDate(Date.now());
+      
+      sendMail(
+        loggedUser.email,
+        `Password Changed`,
+        `Your password has been changed at ${formattedDate}`
+      );
+
+      req.flash("profile-notification", [
+        "You just changed your password",
+      ]);
       res.redirect("/profile");
     } else {
       res.redirect("/login");
@@ -167,7 +190,7 @@ router.post(
         const isNewPasswordSame = await bcrypt.compare(
           newpassword,
           loggedUser.password
-        )
+        );
 
         if (isNewPasswordSame) {
           req.flash("fgpr2Messages", [
@@ -180,7 +203,32 @@ router.post(
         await loggedUser.save();
         req.session.otpfgpr = null;
         req.session.save();
-        res.redirect("/dashboard");
+
+        const formatDate = (timestamp) => {
+            const date = new Date(timestamp);
+    
+            return new Intl.DateTimeFormat("id-ID", {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
+            }).format(date);
+          };
+    
+          const formattedDate = formatDate(Date.now());
+          
+          sendMail(
+            loggedUser.email,
+            `Password Changed`,
+            `Your password has been changed at ${formattedDate}`
+          );
+
+        req.flash("profile-notification", [
+            "You just changed your password",
+          ]);
+        res.redirect("/profile");
       } else {
         res.redirect("/login");
       }
@@ -190,5 +238,121 @@ router.post(
     }
   }
 );
+
+router.get("/profile/changeemail", async (req, res) => {
+  try {
+    if (req.isAuthenticated()) {
+      const loggedUser = await User.findById(req.session.passport.user);
+      res.render("changeemail", {
+        title: "Trustly - Change Email",
+        showHeader: false,
+        showFooter: false,
+        showDashboardNav: false,
+        loggedUser,
+        ceMessages: req.flash("ceMessages"),
+      });
+    } else {
+      res.redirect("/login");
+    }
+  } catch (error) {
+    console.error("Error loading change email page:", error);
+    res
+      .status(500)
+      .send("An error occurred while loading the change email page.");
+  }
+});
+
+router.post("/profile/api/resetpassword/submit", async (req, res) => {
+  try {
+    if (req.isAuthenticated()) {
+      const loggedUser = await User.findById(req.session.passport.user);
+      const allUsers = await User.find({});
+      const { newemail, password, accesscode } = req.body;
+
+      if (!newemail) {
+        req.flash("ceMessages", ["Please enter a new email."]);
+        return res.redirect("/profile/changeemail");
+      }
+
+      if (newemail === loggedUser.email) {
+        req.flash("ceMessages", [
+          "New email cannot be the same as the old one.",
+        ]);
+        return res.redirect("/profile/changeemail");
+      }
+
+      if (allUsers.some((user) => user.email === newemail)) {
+        req.flash("ceMessages", ["Email already exists."]);
+        return res.redirect("/profile/changeemail");
+      }
+      const isPasswordCorrect = await bcrypt.compare(
+        password,
+        loggedUser.password
+      );
+      const isAccessCodeCorrect = await bcrypt.compare(
+        accesscode,
+        loggedUser.accesscode
+      );
+      if (!isPasswordCorrect || !isAccessCodeCorrect) {
+        req.flash("ceMessages", ["Incorrect password or access code."]);
+        return res.redirect("/profile/changeemail");
+      }
+      const formatDate = (timestamp) => {
+        const date = new Date(timestamp);
+
+        return new Intl.DateTimeFormat("id-ID", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        }).format(date);
+      };
+
+      const formattedDate = formatDate(Date.now());
+
+      sendMail(
+        loggedUser.email,
+        `Your email address has been changed at ${formattedDate}`,
+        `Your new email address is ${newemail}.`
+      );
+      loggedUser.email = newemail;
+      await loggedUser.save();
+      req.flash("profile-notification", [
+        "You just changed your email address",
+      ]);
+      res.redirect("/profile");
+    } else {
+      res.redirect("/login");
+    }
+  } catch (error) {
+    console.error("Error changing email:", error);
+    res.status(500).send("An error occurred while changing the email.");
+  }
+});
+
+router.get("/profile/changeaccesscode", async (req, res) => {
+    try {
+      if (req.isAuthenticated()) {
+        const loggedUser = await User.findById(req.session.passport.user);
+        res.render("changeaccesscode", {
+          title: "Trustly - Change Access Code",
+          showHeader: false,
+          showFooter: false,
+          showDashboardNav: false,
+          loggedUser,
+          facMessages: req.flash("facMessages"),
+        });
+      } else {
+        res.redirect("/login");
+      }
+    } catch (error) {
+      console.error("Error loading change access code page:", error);
+      res
+        .status(500)
+        .send("An error occurred while loading page.");
+    }
+  });
 
 module.exports = router;

@@ -1,0 +1,39 @@
+<div
+  style="
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    flex-direction: row;
+    width: 100vw;
+    flex-wrap: wrap;
+  "
+>
+  <img
+    src="/assets/trustly-logo.png"
+    style="border-right: 2px solid white; margin: 30px"
+  />
+  <form action="api/resetpassword/submit" method="POST">
+    <p>Enter new email address:</p>
+    <input name="newemail" style="width: 300px; height: 40px; border-radius: 20px;" type="email" required />
+    <p>Enter password:</p>
+    <input name="password" style="width: 300px; height: 40px; border-radius: 20px;" type="password" required />
+    <p>Enter access code:</p>
+    <input name="accesscode" style="width: 300px; height: 40px; border-radius: 20px;" type="password" required />
+   <% if (ceMessages && ceMessages.length > 0) { %>
+    <div style="color: red">
+      <ul>
+        <% ceMessages.forEach(function(msg) { %>
+        <li><%= msg %></li>
+        <% }) %>
+      </ul>
+    </div>
+    <% } %>
+    <br>
+    <a href="/forgotpassword/pr" style="text-decoration: underline; color: white; font-weight: bolder;">Forgot Password?</a>
+    <br>
+    <button type = "submit" style="width: 100px; height: 40px; border-radius: 20px; color: black; background-color: whitesmoke; border: none;margin-top: 10px;">
+      Submit
+    </button>
+  </form>
+</div>

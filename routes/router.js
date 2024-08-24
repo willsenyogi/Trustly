@@ -79,6 +79,7 @@ router.get("/profile", async (req, res) => {
         showFooter: false,
         showDashboardNav: true,
         loggedUser,
+        profileNotifications: req.flash("profile-notification"),
       });
     } catch (error) {
       console.error("Error fetching user:", error);

@@ -1,7 +1,14 @@
 <h1><%= loggedUser.name %></h1>
 <h2>Email Address : <%= loggedUser.email %></h2>
 <h2>Account Opened at <%= new Date(loggedUser.accountOpened).toLocaleDateString('id-ID') %></h2>
+<% if (profileNotifications && profileNotifications.length > 0) { %>
+    <div style="color: red">
+        <% profileNotifications.forEach(function(msg) { %>
+        <h3><%= msg %></h3>
+        <% }) %>
+    </div>
+<% } %>
 <a href="/resetpassword" class="logout-button" style = "font-size: larger;">Reset Password</a>
-<a href="#" class="logout-button">Change Email</a>
+<a href="/profile/changeemail" class="logout-button">Change Email</a>
 <a href="#" class="logout-button">Change Access Code</a>
 <a href="#" class="logout-button">Close Account</a>
