@@ -12,7 +12,8 @@
     <div>
       <p>Access Code</p>
       <input name="accesscode" style="width: 300px; height: 40px; border-radius: 20px;" type="password" required />
-      <a href="/signup" style="text-decoration: none; color: white;"><p>Don't have an account?</p></a>
+      <a href="/signup" style="text-decoration: none; color: white; font-weight: bolder"><p>Don't have an account?</p></a>
+      <a href="/forgotpassword/byemail" style="text-decoration: none; color: white; font-weight: bolder;">Forgot Password?</a>
     </div>
     <% if (error_msg.length > 0) { %>
       <div style="color: red;"><%= error_msg %></div>
@@ -20,9 +21,10 @@
     <% if (success_msg.length > 0) { %>
       <div style="color: green;"><%= success_msg %></div>
     <% } %>
-    <button type = "submit" style="width: 100px; height: 40px; border-radius: 20px; color: black; background-color: whitesmoke; border: none;">
-      Submit
+    <button type="submit" style="width: 100px; height: 40px; border-radius: 20px; color: black; background-color: whitesmoke; border: none; margin-top: 10px; align-self: center; font-weight: bold; font-size: larger;">
+      Login
     </button>
+    
   </form>
 </div>
 
