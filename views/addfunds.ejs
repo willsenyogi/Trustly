@@ -17,7 +17,8 @@
   }).format(0) %>
 </h2>
 <% } %>
-
+<p>Account Balance : <%= new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR'
+}).format(loggedUser.balance || 0) %></p>
 <form action="/api/addfunds/savings" method="POST">
   <% if (loggedUser.savingsTitle && loggedUser.savingsTarget) { %>
   <input
