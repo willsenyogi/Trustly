@@ -36,9 +36,7 @@
             </h2>
             <% if (loggedUser.savingsTarget) { %>
               <p>Savings Target: <%= new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(loggedUser.savingsTarget || 0) %></p>
-            <% } %>
-            <% if (loggedUser.savingsAmount > 0) { %>
-              <a href="#" class="withdraw-button" id="withdraw-button" data-toggle="modal" data-target="#withdrawModal">Withdraw</a>
+              <a href="#" class="withdraw-button" id="withdraw-button" data-toggle="modal" data-target="#withdrawModal">Close Savings</a>
             <% } %>
           <% } else { %>
             <p>Total Savings</p>
@@ -46,7 +44,10 @@
               <%= new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(0) %>
             </h2>
           <% } %>
-          <a href="/addfunds/savings" id="showcase-button">Configure</a>
+          <a href="/addfunds/savings" id="showcase-button">Add Funds</a>
+          <% if (loggedUser.savingsAmount > 0) { %>
+            <a href="/addfunds/savings/withdraw" id="showcase-button">Withdraw</a>
+          <% } %>
           <% if (wdMessages && wdMessages.length > 0) { %>
             <div style="color: red;">
               <% wdMessages.forEach(function(msg) { %>
@@ -69,7 +70,7 @@
   <div class="modal-content">
     <span class="close">&times;</span>
     <h2>Withdraw from Savings</h2>
-    <form id="withdraw-form" action="/api/addfunds/withdrawsavings" method="POST">
+    <form id="withdraw-form" action="/api/addfunds/withdrawsavings/close" method="POST">
       <input type="hidden" name="savingsAmount" value="<%= loggedUser.savingsAmount %>" />
       <input type="hidden" name="savingsTitle" value="<%= loggedUser.savingsTitle %>" />
       <input type="hidden" name="savingsTarget" value="<%= loggedUser.savingsTarget %>" />
