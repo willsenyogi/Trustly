@@ -462,6 +462,217 @@ router.post("/api/profile/resetaccesscode/otpconfirm/true/change", async (req, r
         res.status(500).send("An error occurred while changing the access code.");
     }
 }); 
-        
+       
+router.get("/profile/closeaccount", async (req, res) => {
+  try {
+    if (req.isAuthenticated()) {
+      const loggedUser = await User.findById(req.session.passport.user);
+      const otp = Math.floor(100000 + Math.random() * 900000);
+      req.session.closeaccountotp = String(otp);
+      req.session.save();
+      sendMail(
+        loggedUser.email,
+        `Your One-Time Password to close your account`,
+        `Your One-Time Password to close your account is ${otp}\nIgnore this email if you did not request this.`
+      )
+      res.render("closeaccount", {
+        title: "Trustly - Close Account",
+        showHeader: false,
+        showFooter: false,
+        showDashboardNav: false,
+        loggedUser,
+        closeMessage: req.flash("closeMessage"),
+      });
+    } else {
+      res.redirect("/login");
+    }
+  } catch (error) {
+    console.error("Error loading close account page:", error);
+    res.status(500).send("An error occurred while loading page.");
+  }
+});
 
+router.post("/api/profile/closeaccount/otpconfirm", async (req, res) => {
+  try {
+    if (req.isAuthenticated()) {
+      const loggedUser = await User.findById(req.session.passport.user);
+      const { closeaccountotp } = req.body;
+      if (String(closeaccountotp) === req.session.closeaccountotp) {
+        res.redirect("/profile/closeaccount/otpconfirm/true");
+      } 
+    } else {
+      req.flash("closeMessage", ["Incorrect OTP. New OTP has been sent."]);
+      res.redirect("/profile/closeaccount");
+    }
+  } catch (error) {
+    console.error("Error changing access code:", error);
+    res.status(500).send("An error occurred while changing the access code.");
+  }
+});
+
+router.get("/profile/closeaccount/otpconfirm/true", async (req, res) => {
+  try {
+    if (req.isAuthenticated()) {
+      const loggedUser = await User.findById(req.session.passport.user);
+      res.render("closeaccountotpconfirm", {
+        title: "Trustly - Close Account",
+        showHeader: false,
+        showFooter: false,
+        showDashboardNav: false,
+        loggedUser,
+        closeMessage2: req.flash("closeMessage2"),
+      });
+    } else {
+      res.redirect("/login");
+    }
+  } catch (error) {
+    console.error("Error loading close account page:", error);
+    res.status(500).send("An error occurred while loading page.");
+  }
+});
+
+router.post("/api/profile/closeaccount/otpconfirm/true/close", async (req, res) => {
+  try {
+    if (req.isAuthenticated()) {
+      const loggedUser = await User.findById(req.session.passport.user);
+      const { password, accesscode } = req.body;
+
+      const passwordMatch = await bcrypt.compare(password, loggedUser.password);
+      const accesscodeMatch = await bcrypt.compare(accesscode, loggedUser.accesscode);
+
+      if (!passwordMatch) {
+        req.flash("closeMessage2", ["Incorrect password or access code. Try again."]);
+        return res.redirect("/profile/closeaccount/otpconfirm/true");
+      }
+
+      if (!accesscodeMatch) {
+        req.flash("closeMessage2", ["Incorrect password or access code. Try again."]);
+        return res.redirect("/profile/closeaccount/otpconfirm/true");
+      }
+     
+      await User.deleteOne({ _id: loggedUser._id });
+      req.session.closeaccountotp = null;
+      req.session.save();
+      req.flash("closeMessage2", ["Your account has been closed successfully."]);
+      res.redirect("/login");
+    } else {
+      res.redirect("/login");
+    }
+  } catch (error) {
+    console.error("Error closing account:", error);
+    res.status(500).send("An error occurred while closing your account.");
+  }
+});
+
+router.get("/forgotpassword/byemail", (req, res) => {
+  res.render("forgotpassword-login", {
+    title: "Trustly - Forgot Password",
+    showHeader: false,
+    showFooter: false,
+    showDashboardNav: false,
+    forgotPasswordMessage: req.flash("forgotPasswordMessage"),
+  });
+});
+
+router.post("/api/forgotpassword/byemail/sendotp", async (req, res) => {
+  try {
+    const allUsers = await User.find();
+    const { email } = req.body;
+
+    if (!email) {
+      req.flash("forgotPasswordMessage", ["Please enter your email address."]);
+      return res.redirect("/forgotpassword/byemail");
+    }
+
+    if (!allUsers.some((user) => user.email === email)) {
+      req.flash("forgotPasswordMessage", ["Email address not found."]);
+      return res.redirect("/forgotpassword/byemail");
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000);
+    req.session.forgotpasswordotp = String(otp);
+    req.session.requestedEmail = email;
+    req.session.save();
+    sendMail(
+      email,
+      `Your One-Time Password to reset your password`,
+      `Your One-Time Password to reset your password is ${otp}\nIgnore this email if you did not request this.`
+    )
+    res.redirect("/forgotpassword/byemail/otpconfirm");
+  } catch (error) {
+    console.error("Error sending OTP:", error);
+    res.status(500).send("An error occurred while sending OTP.");
+  }
+});
+
+router.get("/forgotpassword/byemail/otpconfirm", (req, res) => {
+  res.render("forgotpassword-otpconfirmation", {
+    title: "Trustly - Forgot Password",
+    showHeader: false,
+    showFooter: false,
+    showDashboardNav: false,
+    requestedEmail: req.session.requestedEmail,
+    forgotPasswordMessage2: req.flash("forgotPasswordMessage2"),
+  });
+});
+
+router.post("/api/forgotpassword/byemail/otpconfirm/true?", async (req, res) => {
+  try {
+    const { otp } = req.body;
+    if (otp === req.session.forgotpasswordotp) {
+      res.redirect("/forgotpassword/byemail/newpassword");
+    } else {
+      req.flash("forgotPasswordMessage2", ["Invalid OTP. Try again."]);
+      res.redirect("/forgotpassword/byemail/otpconfirm");
+    }
+  } catch (error) {
+    console.error("Error sending OTP:", error);
+    res.status(500).send("An error occurred while sending OTP.");
+  }
+});
+
+router.get("/forgotpassword/byemail/newpassword", (req, res) => {
+  res.render("forgotpassword-newpassword", {
+    title: "Trustly - Forgot Password",
+    showHeader: false,
+    showFooter: false,
+    showDashboardNav: false,
+    forgotPasswordMessage3: req.flash("forgotPasswordMessage2"),
+  });
+});
+
+router.post("/api/forgotpassword/byemail/newpassword", async (req, res) => {
+  try {
+    const { password } = req.body;
+    const requestedEmail = req.session.requestedEmail;
+    const user = await User.findOne({ email: requestedEmail });
+    if (!password) {
+      req.flash("forgotPasswordMessage3", ["Password cannot be empty."]);
+      return res.redirect("/forgotpassword/byemail/newpassword");
+    }
+
+    if (password.length < 8) {
+      req.flash("forgotPasswordMessage3", ["Password must be at least 8 characters."]);
+      return res.redirect("/forgotpassword/byemail/newpassword");
+    }
+
+    if(user.password === password) {
+      req.flash("forgotPasswordMessage3", ["New password cannot be the same as old password."]);
+      return res.redirect("/forgotpassword/byemail/newpassword");
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    user.password = hashedPassword;
+    await user.save();
+    req.session.forgotpasswordotp = null;
+    req.session.requestedEmail = null;
+    req.session.save();
+    res.redirect("/login");
+  } catch (error) {
+    console.error("Error sending OTP:", error);
+    res.status(500).send("An error occurred while sending OTP.");
+  }
+});
+    
 module.exports = router;
