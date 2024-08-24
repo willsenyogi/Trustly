@@ -55,5 +55,7 @@ app.set('view engine', 'ejs');
 
 // Routes
 app.use('/', require('./routes/router.js'));
+app.use('/', require('./routes/auth.js'));
+app.use('/', require('./routes/account.js'));
 
 app.listen(process.env.PORT, () => console.log(`Server running on port ${process.env.PORT}`));

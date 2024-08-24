@@ -1,16 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const User = require("../model/user");
-const passport = require("passport");
 const bcrypt = require("bcryptjs");
 const PDFDocument = require("pdfkit");
 const path = require("path");
-const {
-  generateAccountNumber,
-  generateCardNumber,
-} = require("../controller/accountController");
 const transactionHistory = require("../model/transactionHistory");
-const sendMail = require("../controller/otpmailer");
 
 router.get("/", async (req, res) => {
   res.render("homepage", {
@@ -18,146 +12,6 @@ router.get("/", async (req, res) => {
     showDashboardNav: false,
   });
 });
-
-router.get("/signup", async (req, res) => {
-  res.render("signup", {
-    title: "Trustly - Signup",
-    showHeader: false,
-    showFooter: false,
-    showDashboardNav: false,
-    errors: [],
-    formData: {},
-  });
-});
-
-router.post("/signup/submit", async (req, res) => {
-  const users = await User.find({});
-  const { name, email, password, accesscode, cardType } = req.body;
-  let errors = [];
-
-  if (password.length < 8) {
-    errors.push("Password must be at least 8 characters long.");
-  }
-
-  if (!/^\d{6}$/.test(accesscode)) {
-    errors.push("Access code must be exactly 6 digits.");
-  }
-
-  if (!name || !email || !password || !accesscode || !cardType) {
-    errors.push("All fields are required.");
-  }
-
-  if (users.some((user) => user.email === email)) {
-    errors.push("Email already exists.");
-  }
-
-  if (errors.length > 0) {
-    return res.render("signup", {
-      title: "Trustly - Signup",
-      showHeader: false,
-      showFooter: false,
-      showDashboardNav: false,
-      errors,
-      formData: { name, email, cardType },
-    });
-  }
-
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
-
-  req.session.otp = otp;
-  req.session.userData = { name, email, password, accesscode, cardType };
-
-  try {
-    await sendMail(email, "Your OTP for Trustly Signup", `Your OTP code is ${otp}`);
-    res.redirect("/signup/emailverification");
-  } catch (error) {
-    console.log(error);
-    res.status(500).send("An error occurred while sending the OTP email.");
-  }
-});
-
-router.get("/signup/emailverification", (req, res) => {
-  res.render("emailverification", {
-    title: "Trustly - Email Verification",
-    showHeader: false,
-    showFooter: false,
-    showDashboardNav: false,
-    errors: [],
-  });
-});
-
-router.post("/signup/emailverification", async (req, res) => {
-  const { otp } = req.body;
-  const { name, email, password, accesscode, cardType } = req.session.userData;
-
-  if (otp !== req.session.otp) {
-    return res.render("emailverification", {
-      title: "Trustly - Email Verification",
-      showHeader: false,
-      showFooter: false,
-      showDashboardNav: false,
-      errors: ["Invalid OTP. Please try again."],
-    });
-  }
-
-  const cardExpiry = new Date();
-  cardExpiry.setFullYear(cardExpiry.getFullYear() + 5);
-  cardExpiry.setMonth(cardExpiry.getMonth() + 1);
-  cardExpiry.setDate(0);
-  cardExpiry.setHours(23, 59, 59, 999);
-
-  try {
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const hashedCode = await bcrypt.hash(accesscode, 10);
-    const accountNumber = generateAccountNumber();
-    const cardNumber = generateCardNumber();
-
-    const user = new User({
-      name,
-      email,
-      password: hashedPassword,
-      accesscode: hashedCode,
-      cardType,
-      cardExpiry,
-      accountNumber,
-      cardNumber,
-    });
-    await user.save();
-
-    req.login(user, (err) => {
-      if (err) {
-        console.log(err);
-        return res.status(500).send("An error occurred while logging in.");
-      }
-      res.redirect("/dashboard");
-      console.log(`User ${name} added and logged in`);
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).send("An error occurred while processing your request.");
-  }
-});
-
-router.get("/login", async (req, res) => {
-  res.render("login", {
-    title: "Trustly - Login",
-    showHeader: false,
-    showFooter: false,
-    showDashboardNav: false,
-    error: req.flash("error"),
-  });
-});
-
-router.post(
-  "/login/submit",
-  passport.authenticate("local", {
-    successRedirect: "/dashboard",
-    failureRedirect: "/login",
-    failureFlash: true,
-  })
-);
-
-module.exports = router;
 
 router.get("/dashboard", async (req, res) => {
   if (req.isAuthenticated()) {
@@ -670,161 +524,44 @@ router.get("/addfunds/savings/withdraw", async (req, res) => {
 });
 
 router.post("/api/addfunds/savings/withdraw", async (req, res) => {
-  if (req.isAuthenticated()) {
-    const loggedUser = await User.findById(req.session.passport.user);
-    const { withdrawAmount, savingsTitle, savingsTarget, accesscode } = req.body;
-    const isCodeMatch = await bcrypt.compare(accesscode, loggedUser.accesscode);
-    if (!isCodeMatch) {
-      req.flash("wdsMessages", ["Incorrect access code"]);
-      return res.redirect("/addfunds/savings/withdraw");
-    }
-
-    if (withdrawAmount > loggedUser.savingsAmount) {
-      req.flash("wdsMessages", ["Insufficient funds."]);
-      return res.redirect("/addfunds/savings/withdraw");
-    }
-
-    loggedUser.savingsAmount -= Number(withdrawAmount);
-    loggedUser.balance += Number(withdrawAmount);
-    const history = new transactionHistory({
-      sender: loggedUser.accountNumber,
-      senderName: loggedUser.name,
-      receiver: loggedUser.accountNumber,
-      receiverName: "Savings (" + (savingsTitle || "N/A") + ")",
-      transactionType: "Savings Withdrawal (DB)",
-      amount: withdrawAmount,
-    });
-    await loggedUser.save();
-    await history.save();
-    req.flash("wdsMessages", ["Savings withdrawn successfully."]);
-    res.redirect("/addfunds/savings/withdraw?success=true");
-  } else {
-    res.redirect("/login");
-  }
-});
-
-router.get("/resetpassword", (req, res) => {
-  res.render("resetpassword", {
-    title: "Trustly - Forgot Password",
-    showHeader: false,
-    showFooter: false,
-    showDashboardNav: false,
-    errors: req.flash("error"),
-  });
-});
-
-router.post("/api/resetpassword/submit", async (req, res) => {
-  const loggedUser = await User.findById(req.session.passport.user);
-  const { oldpassword, newpassword } = req.body;
-
-  const isPasswordMatch = await bcrypt.compare(oldpassword, loggedUser.password);
-
-  if (!isPasswordMatch) {
-    req.flash("error", ["Incorrect password."]);
-    return res.redirect("/resetpassword");
-  }
-
-  loggedUser.password = await bcrypt.hash(newpassword, 10);
-
-  await loggedUser.save();
-
-  req.flash("success", ["Password changed successfully."]);
-  res.redirect("/profile");
-});
-
-router.get("/forgotpassword/pr", async (req, res) => {
   try {
     if (req.isAuthenticated()) {
-      const loggedUser = await User.findById(req.session.passport.user);
-      const otp =  Math.floor(100000 + Math.random() * 900000);
-      req.session.otpfgpr = otp;
-      req.session.save();
-      sendMail(loggedUser.email, "OTP Code", "Your OTP code is: " + otp);
-      res.render("forgotpassword-pr", {
-        title: "Trustly - Forgot Password",
-        showHeader: false,
-        showFooter: false,
-        showDashboardNav: false,
-        loggedUser,
-        fgprMessages: req.flash("fgprMessages"),
-      });
-    } else {
-      res.redirect("/login");
-    } 
-  } catch (error) {
-    console.error("Error loading forgot password page:", error);
-    res.status(500).send("An error occurred while loading the forgot password page.");
-  }
-});
+        const loggedUser = await User.findById(req.session.passport.user);
+        const { withdrawAmount, savingsTitle, savingsTarget, accesscode } = req.body;
+        const isCodeMatch = await bcrypt.compare(accesscode, loggedUser.accesscode);
+        if (!isCodeMatch) {
+          req.flash("wdsMessages", ["Incorrect access code"]);
+          return res.redirect("/addfunds/savings/withdraw");
+        }
 
-router.post("/api/forgotpassword/pr/submit", async (req, res) => {
-  try {
-    if (req.isAuthenticated()) {
-      const loggedUser = await User.findById(req.session.passport.user);
-      const { otpcodepr } = req.body;
-      if (String(req.session.otpfgpr) !== otpcodepr) {
-        req.flash("fgprMessages", ["Incorrect OTP code."]);
-        return res.redirect("/forgotpassword/pr");
+        if (withdrawAmount > loggedUser.savingsAmount) {
+          req.flash("wdsMessages", ["Insufficient funds."]);
+          return res.redirect("/addfunds/savings/withdraw");
+        }
+
+        loggedUser.savingsAmount -= Number(withdrawAmount);
+        loggedUser.balance += Number(withdrawAmount);
+        const history = new transactionHistory({
+          sender: loggedUser.accountNumber,
+          senderName: loggedUser.name,
+          receiver: loggedUser.accountNumber,
+          receiverName: "Savings (" + (savingsTitle || "N/A") + ")",
+          transactionType: "Savings Withdrawal (DB)",
+          amount: withdrawAmount,
+        });
+        await loggedUser.save();
+        await history.save();
+        req.flash("wdsMessages", ["Savings withdrawn successfully."]);
+        res.redirect("/addfunds/savings/withdraw?success=true");
       } else {
-        res.redirect("/forgotpassword/pr/otpconfirmed/true");
-      }
-    } else {
-      res.redirect("/login");
+        res.redirect("/login");
     }
   } catch (error) {
-    console.error("Error changing password:", error);
-    res.status(500).send("An error occurred while changing the password.");
+    console.error("Error withdrawing savings:", error);
+    req.flash("wdsMessages", ["An error occurred while withdrawing the savings."]);
+    res.status(500).redirect("/addfunds/savings/withdraw");
   }
-});
-
-router.get("/forgotpassword/pr/otpconfirmed/true", async (req, res) => {
-  try {
-    if (req.isAuthenticated()) {
-      const loggedUser = await User.findById(req.session.passport.user);
-      res.render("forgotpassword-pr-otpconfirmed", {
-        title: "Trustly - Forgot Password",
-        showHeader: false,
-        showFooter: false,
-        showDashboardNav: false,
-        loggedUser,
-        fgpr2Messages: req.flash("fgpr2Messages"),
-      });
-    } else {
-      res.redirect("/login");
-    }
-  } catch (error) {
-    console.error("Error loading forgot password page:", error);
-    res.status(500).send("An error occurred while loading the forgot password page.");
-  }
-})
-
-router.post("/api/forgotpassword/pr/otpconfirmed/true/change", async (req, res) => {
-  try {
-    if (req.isAuthenticated()) {
-      const loggedUser = await User.findById(req.session.passport.user);
-      const { newpassword } = req.body;
-      if (!newpassword) {
-        req.flash("fgpr2Messages", ["Please enter a new password."]);
-        return res.redirect("/forgotpassword/pr/otpconfirmed/true");
-      }
-
-      if (newpassword.length < 8) {
-        req.flash("fgpr2Messages", ["Password must be at least 8 characters long."]);
-        return res.redirect("/forgotpassword/pr/otpconfirmed/true");
-      }
-      loggedUser.password = await bcrypt.hash(newpassword, 10);
-      await loggedUser.save();
-      req.flash("fgpr2Messages", ["Password changed successfully."]);
-      req.session.otpfgpr = null;
-      req.session.save();
-      res.redirect("/dashboard");
-    } else {
-      res.redirect("/login");
-    }
-  } catch (error) {
-    console.error("Error changing password:", error);
-    res.status(500).send("An error occurred while changing the password.");
-  }
+  
 });
 
 module.exports = router;
