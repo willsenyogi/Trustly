@@ -1,0 +1,144 @@
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<% if (loggedUser && loggedUser.savingsTitle) { %>
+<p><%= loggedUser.savingsTitle %></p>
+<p>Total Savings Balance</p>
+<h2>
+  <%= new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR'
+  }).format(loggedUser.savingsAmount || 0) %>
+</h2>
+<p>
+  Savings Target : <%= new Intl.NumberFormat('id-ID', { style: 'currency',
+  currency: 'IDR' }).format(loggedUser.savingsTarget || 0) %>
+</p>
+<% } else { %>
+<p>Total Savings Balance</p>
+<h2>
+  <%= new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR'
+  }).format(0) %>
+</h2>
+<% } %>
+
+<form action="/api/addfunds/savings/withdraw" method="POST">
+  <% if (loggedUser.savingsTitle && loggedUser.savingsTarget) { %>
+  <input
+    type="hidden"
+    name="savingsTitle"
+    placeholder="Savings Title"
+    value="<%= loggedUser.savingsTitle %>"
+    style="height: 40px; width: 300px; margin-bottom: 10px"
+  />
+  <br />
+  <input
+    type="number"
+    name="withdrawAmount"
+    placeholder="Withdraw Amount"
+    required
+    style="height: 70px; font-size: larger"
+  />
+  <input
+    type="submit"
+    value="Withdraw"
+    style="
+      height: 70px;
+      font-size: larger;
+      background-color: black;
+      color: white;
+      border: 2px solid white;
+    "
+  />
+  <% } else { %>
+  <input
+    type="text"
+    name="savingsTitle"
+    placeholder="Savings Title"
+    style="height: 40px; width: 300px; margin-bottom: 10px"
+    required
+  />
+  <br />
+  <input
+    type="number"
+    name="savingsTarget"
+    placeholder="Savings Target"
+    style="height: 40px; width: 300px; margin-bottom: 10px"
+    required
+  />
+  <br />
+  <input
+    type="number"
+    name="withdrawAmount"
+    placeholder="Withdraw Amount"
+    style="height: 70px; font-size: larger"
+  />
+  <input
+    type="submit"
+    value="Withdraw"
+    style="
+      height: 70px;
+      font-size: larger;
+      background-color: black;
+      color: white;
+      border: 2px solid white;
+    "
+  />
+  <% } %>
+</form>
+
+<% if (wdsMessages && wdsMessages.length > 0) { %>
+<div style="color: red">
+  <% wdsMessages.forEach(function(msg) { %>
+  <p><%= msg %></p>
+  <% }); %>
+</div>
+<% } %>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get("success") === "true") {
+      Swal.fire({
+        icon: "success",
+        title: "Withdrawal Successful",
+        text: "Your savings withdrawal was completed successfully.",
+        confirmButtonText: "OK",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          window.location.href = "/dashboard";
+        }
+      });
+    }
+
+    // Handle form submission for adding funds to savings
+    const form = document.querySelector('form[action="/api/addfunds/savings/withdraw"]');
+    if (form) {
+      form.addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        Swal.fire({
+          title: "Enter Access Code",
+          input: "password",
+          inputLabel: "Access Code",
+          inputAttributes: {
+            autocapitalize: "off",
+          },
+          showCancelButton: true,
+          confirmButtonText: "Submit",
+          cancelButtonText: "Cancel",
+          inputValidator: (value) => {
+            if (!value) {
+              return "You need to enter the access code!";
+            }
+          },
+        }).then((result) => {
+          if (result.isConfirmed) {
+            const input = document.createElement("input");
+            input.type = "hidden";
+            input.name = "accesscode";
+            input.value = result.value;
+            form.appendChild(input);
+            form.submit();
+          }
+        });
+      });
+    }
+  });
+</script>
