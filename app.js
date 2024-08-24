@@ -18,10 +18,10 @@ dotenv.config();
 app.use(express.urlencoded({ extended: true }));
 
 app.use(session({
-    secret: 'your_secret_key', 
+    secret: process.env.SESSION_SECRET, 
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: true }
+    cookie: { secure: process.env.NODE_ENV === 'production' }
 }));
 
 // Initialize flash messages after session middleware
