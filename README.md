@@ -1,6 +1,9 @@
 # Trustly
 
-Trustly is a banking web application designed to manage and track financial activities. This project includes features such as balance tracking, savings deposit, virtual debit cards, transaction tracking and history, and balance transfers between Trustly accounts. **Note**: This application is a portfolio project and does not include a responsive layout (responsive CSS).
+Trustly is a banking web application designed to manage and track financial activities. This project includes features such as balance tracking, savings deposit, virtual debit cards, transaction tracking and history, and balance transfers between Trustly accounts. 
+
+> [!NOTE]
+> This application is a portfolio project and does not include a responsive layout (responsive CSS).
 
 ## Features
 
