@@ -6,7 +6,7 @@ const app = express();
 const passport = require("passport");
 const expressLayout = require('express-ejs-layouts');
 const session = require('express-session');
-const flash = require('connect-flash'); // Import connect-flash
+const flash = require('connect-flash'); 
 const accountController = require('./controller/accountController');
 require('./auth/local.js');
 
@@ -17,12 +17,11 @@ app.use(cors());
 dotenv.config();
 app.use(express.urlencoded({ extended: true }));
 
-// Configure session middleware (make sure this comes before flash and passport)
 app.use(session({
-    secret: 'your_secret_key', // Replace with a strong secret key
+    secret: 'your_secret_key', 
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: false } // Set secure: true if using HTTPS
+    cookie: { secure: true }
 }));
 
 // Initialize flash messages after session middleware
@@ -36,7 +35,7 @@ app.use(passport.session());
 app.use((req, res, next) => {
     res.locals.success_msg = req.flash('success');
     res.locals.error_msg = req.flash('error');
-    res.locals.error = req.flash('error'); // For Passport's error messages
+    res.locals.error = req.flash('error');
     next();
 });
 

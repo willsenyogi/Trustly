@@ -40,6 +40,14 @@ router.get("/signup", async (req, res) => {
     if (users.some((user) => user.email === email)) {
       errors.push("Email already exists.");
     }
+
+    if (!/^[A-Za-z\s]+$/.test(name)) {
+      errors.push("Name cannot contain numbers or symbols.");
+    }
+    
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !email.endsWith('.com')) {
+      errors.push("Email must contain '@' and end with '.com'.");
+    }
   
     if (errors.length > 0) {
       return res.render("signup", {
