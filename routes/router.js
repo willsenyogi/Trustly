@@ -250,7 +250,7 @@ router.get("/transactions/invoice/:id", async (req, res) => {
       res.setHeader("Content-Type", "application/pdf");
       res.setHeader(
         "Content-Disposition",
-        `inline; filename=invoice-${transaction._id}.pdf`
+        `attachment; filename=invoice-${transaction._id}.pdf`
       );
 
       // Pipe the PDF document to the response
