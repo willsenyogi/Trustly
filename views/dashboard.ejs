@@ -19,12 +19,12 @@
         </div>
 
         <div class="cards-showcase">
-          <h1>Your Card</h1>
+          <h1 id="cards">Your Card</h1>
           <p><%= loggedUser.cardType.toUpperCase() %></p>
           <img src="/assets/card.png" />
           <p>Valid until <%= formattedExpiry %></p>
           <a href="#" id="showcase-button">See Card Detail</a>
-          <a href="#" id="showcase-button">Debit Card Promos</a>
+          <a href="/promos" id="showcase-button">Debit Card Promos</a>
         </div>
 
         <div class="deposit-showcase">
