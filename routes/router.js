@@ -444,7 +444,7 @@ router.post("/api/addfunds/savings", async (req, res) => {
       }
 
       if (Number(savingsTarget) > 1000000000000) {
-        return redirectWithFormData("Savings target cannot exceed Rp 1,000,000,000,000.");
+        return redirectWithFormData("Savings target exceeded the limit.");
       }
 
       const isCodeMatch = await bcrypt.compare(accesscode, loggedUser.accesscode);
