@@ -406,6 +406,11 @@ router.get("/addfunds/savings", async (req, res) => {
         showDashboardNav: true,
         loggedUser,
         sdMessages: req.flash("sdMessages"),
+        formData: {
+          savingsAmount: req.query.savingsAmount || '',
+          savingsTitle: req.query.savingsTitle || '',
+          savingsTarget: req.query.savingsTarget || ''
+        }
       });
     } catch (error) {
       console.error("Error fetching user:", error);
@@ -424,20 +429,27 @@ router.post("/api/addfunds/savings", async (req, res) => {
       const loggedUser = await User.findById(req.session.passport.user);
       const { savingsAmount, savingsTitle, savingsTarget, accesscode } = req.body;
 
+      const redirectWithFormData = (message) => {
+        const params = new URLSearchParams({
+          savingsAmount,
+          savingsTitle,
+          savingsTarget
+        });
+        req.flash("sdMessages", [message]);
+        return res.redirect(`/addfunds/savings?${params.toString()}`);
+      };
+
       if (savingsAmount > loggedUser.balance) {
-        req.flash("sdMessages", ["Insufficient funds."]);
-        return res.redirect("/addfunds/savings");
+        return redirectWithFormData("Insufficient funds.");
       }
 
       if (Number(savingsTarget) >= 1000000000000) {
-        req.flash("sdMessages", ["Savings target cannot exceed Rp 1,000,000,000,000."]);
-        return res.redirect("/addfunds/savings");
+        return redirectWithFormData("Savings target cannot exceed Rp 1,000,000,000,000.");
       }
 
       const isCodeMatch = await bcrypt.compare(accesscode, loggedUser.accesscode);
       if (!isCodeMatch) {
-        req.flash("sdMessages", ["Incorrect access code"]);
-        return res.redirect("/addfunds/savings");
+        return redirectWithFormData("Incorrect access code");
       }
 
       loggedUser.balance -= Number(savingsAmount);
