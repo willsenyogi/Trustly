@@ -39,7 +39,7 @@ const userSchema = new mongoose.Schema({
         type: Number
     },
     balance: {
-        type: Number,
+        type: BigInt,
         default: 20000000
     },
     savingsTitle: {
