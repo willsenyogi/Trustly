@@ -429,6 +429,11 @@ router.post("/api/addfunds/savings", async (req, res) => {
         return res.redirect("/addfunds/savings");
       }
 
+      if (Number(savingsTarget) >= 1000000000000) {
+        req.flash("sdMessages", ["Savings target cannot exceed Rp 1,000,000,000,000."]);
+        return res.redirect("/addfunds/savings");
+      }
+
       const isCodeMatch = await bcrypt.compare(accesscode, loggedUser.accesscode);
       if (!isCodeMatch) {
         req.flash("sdMessages", ["Incorrect access code"]);
@@ -438,7 +443,7 @@ router.post("/api/addfunds/savings", async (req, res) => {
       loggedUser.balance -= Number(savingsAmount);
       loggedUser.savingsAmount += Number(savingsAmount);
       loggedUser.savingsTitle = savingsTitle || loggedUser.savingsTitle;  // Update if provided
-      loggedUser.savingsTarget = savingsTarget || loggedUser.savingsTarget;  // Update if provided
+      loggedUser.savingsTarget = Number(savingsTarget) || loggedUser.savingsTarget;  // Update if provided
       await loggedUser.save();
 
       req.flash("sdMessages", ["Savings added successfully."]);
