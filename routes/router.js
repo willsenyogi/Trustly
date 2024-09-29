@@ -13,6 +13,13 @@ router.get("/", async (req, res) => {
   });
 });
 
+router.get("/promos", async (req, res) => {
+  res.render("promos", {
+    title: "Trustly - Debit Card Promos",
+    showDashboardNav: false,
+  });
+});
+
 router.get("/dashboard", async (req, res) => {
   if (req.isAuthenticated()) {
     try {
