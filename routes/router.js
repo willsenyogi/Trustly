@@ -443,7 +443,7 @@ router.post("/api/addfunds/savings", async (req, res) => {
         return redirectWithFormData("Insufficient funds.");
       }
 
-      if (Number(savingsTarget) >= 1000000000000) {
+      if (Number(savingsTarget) > 1000000000000) {
         return redirectWithFormData("Savings target cannot exceed Rp 1,000,000,000,000.");
       }
 
