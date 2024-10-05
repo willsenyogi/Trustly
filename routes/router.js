@@ -447,6 +447,10 @@ router.post("/api/addfunds/savings", async (req, res) => {
         return redirectWithFormData("Savings target exceeded the limit.");
       }
 
+      if (Number(savingsTarget) < 0) {
+        return redirectWithFormData("Savings target cannot be negative.");
+      }
+
       const isCodeMatch = await bcrypt.compare(accesscode, loggedUser.accesscode);
       if (!isCodeMatch) {
         return redirectWithFormData("Incorrect access code");
