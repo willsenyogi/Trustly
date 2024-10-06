@@ -45,8 +45,8 @@ router.get("/signup", async (req, res) => {
       errors.push("Name cannot contain numbers or symbols.");
     }
     
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !email.endsWith('.com')) {
-      errors.push("Email must contain '@' and end with '.com'.");
+    if  (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errors.push("Email must contain '@' and end valid email domain.");
     }
   
     if (errors.length > 0) {
