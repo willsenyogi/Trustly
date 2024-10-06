@@ -42,8 +42,17 @@
     form.addEventListener('submit', function(event) {
       event.preventDefault();
 
+      const accountNumber = form.querySelector('select[name="accountNumber"]').value;
+      const transferAmount = form.querySelector('input[name="transferAmount"]').value;
+      const formattedAmount = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(transferAmount);
+
       Swal.fire({
-        title: 'Enter Access Code',
+        icon: "info",
+          title: "Confirm Transfer",
+          html: `
+            <p>Receiver: ${accountNumber}</p>
+            <p><strong>${formattedAmount}</strong></p>
+          `,
         input: 'password',
         inputLabel: 'Access Code',
         inputAttributes: {
