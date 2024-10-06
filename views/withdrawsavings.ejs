@@ -19,7 +19,6 @@
 <% } %>
 
 <form action="/api/addfunds/savings/withdraw" method="POST">
-  <% if (loggedUser.savingsTitle && loggedUser.savingsTarget) { %>
   <input
     type="hidden"
     name="savingsTitle"
@@ -27,46 +26,19 @@
     value="<%= loggedUser.savingsTitle %>"
     style="height: 40px; width: 300px; margin-bottom: 10px"
   />
-  <br />
   <input
-    type="number"
-    name="withdrawAmount"
-    placeholder="Withdraw Amount"
-    required
-    style="height: 70px; font-size: larger"
-  />
-  <input
-    type="submit"
-    value="Withdraw"
-    style="
-      height: 70px;
-      font-size: larger;
-      background-color: black;
-      color: white;
-      border: 2px solid white;
-    "
-  />
-  <% } else { %>
-  <input
-    type="text"
-    name="savingsTitle"
-    placeholder="Savings Title"
-    style="height: 40px; width: 300px; margin-bottom: 10px"
-    required
-  />
-  <br />
-  <input
-    type="number"
+    type="hidden"
     name="savingsTarget"
     placeholder="Savings Target"
+    value="<%= loggedUser.savingsTarget %>"
     style="height: 40px; width: 300px; margin-bottom: 10px"
-    required
   />
   <br />
   <input
     type="number"
     name="withdrawAmount"
     placeholder="Withdraw Amount"
+    required
     style="height: 70px; font-size: larger"
   />
   <input
@@ -80,7 +52,6 @@
       border: 2px solid white;
     "
   />
-  <% } %>
 </form>
 
 <% if (wdsMessages && wdsMessages.length > 0) { %>
@@ -112,9 +83,21 @@
     if (form) {
       form.addEventListener("submit", function (event) {
         event.preventDefault();
+        const savingsTitle = form.querySelector('input[name="savingsTitle"]').value;
+        const savingsTarget = form.querySelector('input[name="savingsTarget"]').value;
+        const withdrawAmount = form.querySelector('input[name="withdrawAmount"]').value;
+
+        const formattedTarget = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(savingsTarget);
+        const formattedAmount = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(withdrawAmount);
 
         Swal.fire({
-          title: "Enter Access Code",
+          icon: "info",
+          title: "Confirm Withdrawal",
+          html: `
+            <p>Savings Title: ${savingsTitle}</p>
+            <p>Savings Target: ${formattedTarget}</p>
+            <p><strong>${formattedAmount}</strong></p>
+          `,
           input: "password",
           inputLabel: "Access Code",
           inputAttributes: {
