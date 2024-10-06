@@ -28,6 +28,13 @@
     value="<%= loggedUser.savingsTitle %>"
     style="height: 40px; width: 300px; margin-bottom: 10px"
   />
+  <input
+    type="hidden"
+    name="savingsTarget"
+    placeholder="Savings Target"
+    value="<%= loggedUser.savingsTarget %>"
+    style="height: 40px; width: 300px; margin-bottom: 10px"
+  />
   <br />
   <input
     type="number"
@@ -117,8 +124,21 @@
       form.addEventListener("submit", function (event) {
         event.preventDefault();
 
+        const savingsTitle = form.querySelector('input[name="savingsTitle"]').value;
+        const savingsTarget = form.querySelector('input[name="savingsTarget"]').value;
+        const savingsAmount = form.querySelector('input[name="savingsAmount"]').value;
+
+        const formattedTarget = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(savingsTarget);
+        const formattedAmount = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(savingsAmount);
+
         Swal.fire({
-          title: "Enter Access Code",
+          icon: "info",
+          title: "Confirm Deposit",
+          html: `
+            <p>Savings Title: ${savingsTitle}</p>
+            <p>Savings Target: ${formattedTarget}</p>
+            <p><strong>${formattedAmount}</strong></p>
+          `,
           input: "password",
           inputLabel: "Access Code",
           inputAttributes: {
